@@ -13,7 +13,7 @@ e.g. video_file_in = "..\Loungellusions Media\Samples\n64\mario_1.mov"
 - Experiments
     - One folder per experiment
 
-### Loungellusions Media
+### Loungellusions Media (Google drive)
 - Samples (Prerecorded visual content)
 - Renders (Prerendered top material)
 - Demos (Rendered Tipi previews)
