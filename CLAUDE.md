@@ -36,6 +36,7 @@ Reference it with relative paths from the `.toe`. Never commit media.
 - `docs/OVERVIEW.md` — what the project *is*, artistically. Read before making art choices.
 - `docs/STANDARDS.md` — how we keep files tidy. Living doc; add to it when we learn.
 - `docs/TOOLS.md` — the MCP + tool kit, incl. TouchDesigner MCP and TD-Launcher.
+- `docs/PLAN.md` — build plan: tools, repo methodology, mapping, audio, video transport, show night.
 - `docs/VERSIONS.md` — which TouchDesigner build each `.toe` / `.tox` needs. Generated.
 
 ## Hard rules

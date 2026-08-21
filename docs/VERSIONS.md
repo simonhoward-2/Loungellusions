@@ -25,6 +25,7 @@ tools/td-version.sh sync
 | `Patches/microscope.5.toe` | 2025.32460 | macOS |
 | `Patches/microscope.6.toe` | 2025.32460 | macOS |
 | `Patches/microscope.toe` | 2025.32460 | macOS |
+| `tools/td_backup.tox` | 2025.32460 | macOS |
 
 Read a single file's build:
 

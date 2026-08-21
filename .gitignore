@@ -5,8 +5,17 @@
 TDImportCache/
 *.toe.orig
 
+# Local save history - see docs/STANDARDS.md S12. Git commits are the real history.
+Backup/
+*.[0-9].toe
+*.[0-9][0-9].toe
+
 # Media never lives in git — see docs/STANDARDS.md S5
 *.mov
 *.mp4
 *.mxf
 *.exr
+
+# Python bytecode from tools/
+__pycache__/
+*.pyc

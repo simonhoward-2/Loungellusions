@@ -107,9 +107,34 @@ tools/hooks/install.sh
 **Why:** A rule nobody checks is a rule nobody follows. This runs locally because
 `toeexpand` needs TouchDesigner installed — CI can't do it.
 
----
+## S12 — Stable filename, timestamped backups
 
-## Migration backlog
+**What:** Each artwork or experiment has exactly one working file with a stable name.
+No Save Incremental, no numbered files in the repo.
 
-- `Patches/microscope*.toe` → export as `Components/Microscope/microscope.tox`
-- `Experiments/Light rotation/` → still cooking, leave it
+Drop `tools/td_backup.tox` into the project once. It holds an Execute DAT wired to
+TouchDesigner's Project Pre Save / Project Post Save callbacks, so **every** save routes
+through `tools/td_save.py` — Cmd+S, the File menu, and scripts alike:
+
+- **pre-save** copies the file on disk to `Backup/<name>.<YYYYMMDD-HHMMSS>.toe`
+- **post-save** folds any numbered file TD wrote back onto the stable name, then prunes
+  `Backup/` to the newest 20
+
+Nothing to remember at save time. To save from a script or over MCP, `td_save.save()` does
+the same thing explicitly; the callbacks are idempotent so the two are safe together.
+
+`Backup/` is gitignored. Git commits are the history of record; `Backup/` is the local
+"open the last one next to this one" net that git can't give you cheaply for binaries.
+
+**Why:** TD's numbered files look like version history and are not. Measured: saving over
+`loungellusions_mcp.toe` while the project was named `loungellusions_mcp.1.toe` wrote **both**
+files with identical current content — the numbered copy preserved nothing. The post-save hook
+promotes before it deletes, because a numbered file TD just wrote holds the newest work and
+deleting it blind would throw the save away.
+
+Timestamps beat a rotating `.1 -> .2 -> .3` cascade: nothing gets renamed on save, so a crash
+mid-rotation can't scramble the set, the newest always sorts last, and at ~90KB a copy there is
+no size problem worth solving.
+
+**Known cosmetic wart:** `project.name` keeps climbing (`.1`, `.2`, ...) because TouchDesigner
+only re-reads it when a file is opened. Harmless — the stable file on disk is always correct.

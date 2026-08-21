@@ -4,14 +4,19 @@ What we drive this repo with. Add tools here as we find them.
 
 ## TouchDesigner MCP
 
-The big one. Lets agents read and modify the running TD network directly —
-inspect operators, set params, build nodes.
+Lets agents read and modify the running TD network directly — inspect operators,
+set params, build nodes, capture TOP output as an image.
 
-- **Status:** _(pending — to connect)_
-- **Setup notes:** _(fill once wired)_
-- **Gotchas:** _(fill as we hit them)_
+- **Status:** connected and working.
+- **Install:** `.mcpb` extension (`touchdesigner-mcp` by 8beeeaaat), installed in Claude
+  Desktop. Not configured repo-wide — no `.mcp.json` at root, on purpose.
+- **Bridge:** the `mcp_webserver_base` component inside the open `.toe`, HTTP on port 9981.
+  It reaches **one running TD instance**, not files on disk.
+- **Scope today:** `Experiments/touch-designer-mcp/loungellusions_mcp.toe` only.
+- **Gotchas and method:** `.claude/skills/touchdesigner-mcp/SKILL.md` — read it before
+  building anything. Silent-failure traps live there.
 
-Rule of thumb once live: **look before you build.** Read the existing network,
+Rule of thumb: **look before you build.** Read the existing network,
 then make the smallest change that shows something.
 
 ## TD-Launcher — open a file in the build that made it
