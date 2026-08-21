@@ -1,0 +1,34 @@
+#!/usr/bin/env bash
+#
+# Refuse a commit that touches a .toe / .tox without refreshing docs/VERSIONS.md.
+#
+# Install with:
+#   tools/hooks/install.sh
+#
+# Skip once with:
+#   git commit --no-verify
+
+set -euo pipefail
+
+REPO_ROOT="$(git rev-parse --show-toplevel)"
+
+staged_binaries="$(git diff --cached --name-only --diff-filter=ACMR \
+  | grep -Ei '\.(toe|tox)$' \
+  | grep -Ev '^(Backup|TDImportCache)/' || true)"
+
+[[ -n "$staged_binaries" ]] || exit 0
+
+if ! "$REPO_ROOT/tools/td-version.sh" check >/dev/null 2>&1; then
+  cat >&2 <<'MSG'
+
+  A .toe / .tox is staged but docs/VERSIONS.md does not match what is on disk.
+
+  Every binary file records the TouchDesigner build that saved it. That build is
+  the version everyone else has to open it with, so it belongs in the repo.
+
+  Fix:
+      tools/td-version.sh sync && git add docs/VERSIONS.md
+
+MSG
+  exit 1
+fi

@@ -1,0 +1,12 @@
+# macOS
+.DS_Store
+
+# TouchDesigner
+TDImportCache/
+*.toe.orig
+
+# Media never lives in git — see docs/STANDARDS.md S5
+*.mov
+*.mp4
+*.mxf
+*.exr
