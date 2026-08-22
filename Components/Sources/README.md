@@ -2,20 +2,26 @@
 
 TD build: 2025.32460
 
-Named input sources. One Select TOP per source, named for what it is rather than for the
-node that produces it, so everything downstream refers to `mario` and `gem` instead of
-`src_mario` and `2818_163160472_medium`.
+Every input the show can draw on, named for what it is. Self-contained — the media nodes
+live inside this component now, not scattered across the top level.
 
-**Looks like:** nothing on its own. It's a name-plate, not an artwork.
+**Looks like:** nothing on its own. It's the shelf, not the artwork.
 
-**Needs:** the nodes it points at to exist in `/project1`.
+**Needs:** the Drive media folder as a sibling of the repo (`../Loungellusions Media`).
 
-**Names:** `mario`, `skull`, `gem`, `underworld`, `scroll`, `generative`,
-`syphon1`–`syphon6`.
+| Name | What |
+|---|---|
+| `mario` | `Samples/n64/mario_1.mov` |
+| `skull` | `Samples/microscope/micro_skull.mov` |
+| `gem` | `Samples/microscope/micro_gem.mov` |
+| `underworld` | `Samples/microscope/micro_underworld.mov` |
+| `scroll` | `Samples/microscope/micro_assorted_scroll.mov` |
+| `generative` | Output of the nested `demo` component — animated ramps, no file |
+| `syphon1`–`syphon6` | Live Syphon inputs. Black until something publishes |
 
-`generative` is the existing feedback / ramp / HSV chain (`comp2`), not a file. The six
-`syphon` entries are the live Syphon inputs — black until something publishes to them.
+Sources are **raw**. The mirror, hue-shift and feedback treatments that used to hang off
+individual sources now live in the shared FX component instead, so any source can have any
+of them. See `Components/FXTest/README.md`.
 
-Layers pick a source by name through their `Source` menu, which builds the path
-`/project1/sources/<name>`. Renaming an entry here breaks any layer pointing at it, so
-add new names rather than renaming old ones.
+Layers pick a source by name, building the path `/project1/sources/<name>`. Renaming an
+entry breaks any layer pointing at it — add names rather than renaming.

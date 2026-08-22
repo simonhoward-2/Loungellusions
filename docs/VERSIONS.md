@@ -12,8 +12,11 @@ tools/td-version.sh sync
 
 | File | TD build | Saved on |
 |---|---|---|
+| `Components/Audio/audio.tox` | 2025.32460 | macOS |
+| `Components/Demo/demo.tox` | 2025.32460 | macOS |
 | `Components/FXTest/fxtest.tox` | 2025.32460 | macOS |
 | `Components/Layer/layer.tox` | 2025.32460 | macOS |
+| `Components/PaletteFX/palettefx.tox` | 2025.32460 | macOS |
 | `Components/Sources/sources.tox` | 2025.32460 | macOS |
 | `Components/UVMaps/uvmap_glsl.tox` | 2025.32460 | macOS |
 | `Components/UVMaps/uvmap_hybrid.tox` | 2025.32460 | macOS |

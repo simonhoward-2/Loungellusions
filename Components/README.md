@@ -1,37 +1,25 @@
 # Components
 
-One folder per artwork. Each artwork is a **`.tox`** — a real TouchDesigner Component,
-droppable into any network, carrying its own operators and custom parameters.
+One folder per reusable piece. Each holds a `.tox` and a README describing what it looks
+like, what it needs, and what drives it (Standard S3).
+
+| Component | Does |
+|---|---|
+| `Audio/` | One analysis for the show — `low`, `mid`, `high`, `level` |
+| `Sources/` | Every named input — media files, live Syphon, the generative `demo` |
+| `Demo/` | Animated ramp cluster. The `generative` source |
+| `FXTest/` | Six effect lanes with per-lane wet/dry and blending between lanes |
+| `PaletteFX/` | Test bench for five Palette-Tools effects, same shape as FXTest |
+| `UVMaps/` | The three ways a flat image lands on the tipi: strip, GLSL, hybrid |
+| `Layer/` | One channel: named source, through FX, through its own mapping, out to the mix |
+
+**How they stack in the master:**
 
 ```
-Components/
-  Microscope/
-    microscope.tox
-    README.md
-    assets/
-  Tipi/
-    ...
+sources ─ layer1 ─┐
+        ─ layer2 ─┼─ composition ─ master ─ textureiser_geo ─ render1 ─ camSchnappr ─ projectors
+        ─ layer3 ─┘
 ```
 
-`Loungellusions_master.toe` loads these and composes the show. Master is the mixer;
-the art lives here.
-
-**Expose your knobs.** Put the params that matter on the component's top level as custom
-parameters. Master drives those. Nothing reaches inside a component.
-
-**State your build.** Every component README opens with the TouchDesigner build the
-`.tox` was saved in, on its own line:
-
-```
-TD build: 2023.12370
-```
-
-Don't guess it, read it:
-
-```bash
-tools/td-version.sh read Components/Microscope/microscope.tox
-```
-
-Full rules: `docs/STANDARDS.md` (S1-S3, S9).
-
-New component? Copy the shape above, write the 5-line README, go make something weird.
+Composition and mastering sit at the top level of the master, where they can be reached
+without diving into a component. Everything else is one level down.

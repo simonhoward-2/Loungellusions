@@ -14,6 +14,12 @@ and being shared.
 
 All three output 1280x360 — the unrolled tipi strip.
 
+**Each one is now two parts.** The nodes that *generate* the UV displacement map — the GLSL
+operator and its DATs, the ramps, crops, resolution references and multiplies — are grouped
+into a `uvgen` component inside each mapping. What remains at the top of a mapping is the
+signal path itself: `in1 -> remap -> transform -> out1`, seven nodes instead of thirty-odd.
+Open `uvgen` to change how the mapping is built; stay outside it to see what it does.
+
 **Second input:** each takes an optional second input, used by the original for a feedback
 path from downstream. Layers leave it unconnected.
 
