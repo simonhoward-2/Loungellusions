@@ -199,3 +199,109 @@ appear in the palette for every project.
 
 **Reference for the mapping work:** [camSchnappr docs](https://docs.derivative.ca/Palette:camSchnappr),
 [Derivative's projection mapping guide](https://docs.derivative.ca/Projection_Mapping).
+
+---
+
+## 6. Per-tipi texturing and the Blender unwrap
+
+Decided 2026-08-28, after measuring that the packed-strip approach caps each tipi at 640x115
+pixels and that re-laying UVs in TouchDesigner distorts the islands (the drawn fan covered 41%
+of an island needing 68%).
+
+### Why one texture per tipi beats one packed strip
+
+| | Packed strip (now) | Stacked strip | One texture each |
+|---|---|---|---|
+| Pixels per tipi | 640 x 115 | 1280 x 360 | 1280 x 720 |
+| Effects per tipi | shared | shared | independent |
+| Packing stage | layout + fan generator | layout + fan generator | none |
+
+Separate textures are not just more pixels — they remove the reason the `uvgen` GLSL machinery
+exists. The fan generator, the arcs, the ramp masks and the crops are all there to bend a
+rectangular video into a fan-shaped UV island and to pack two of them into one image. Give each
+tipi its own rectangular unwrap and all of that goes away, replaced by a Transform TOP.
+
+They also unlock what the packed strip can't do: a different source, different effects and a
+different audio channel per tipi. Two tipis showing two players' Mario Kart views with their own
+treatments, rather than one image split in half.
+
+### Blender checklist
+
+1. Import `Models/Teepee2_contUV.fbx`. Keep the original file — export to a new name.
+2. Separate into **three** objects (Edit Mode, `P`): `Tipi_A`, `Canopy`, `Tipi_B`. The canopy
+   between the cones is a projection surface like the others — see the UV zones below.
+3. Per cone: mark a seam from apex to base **up the back**, away from the crowd. The seam is
+   where content wraps around and meets itself — it wants to be where nobody stands.
+4. Unwrap each cone so its island is a **rectangle**: u runs around the cone, v from base to
+   apex. Cylinder projection, or Follow Active Quads on a ring of faces.
+5. Scale each island to fill 0..1 in its own UV space. Each object gets the whole square —
+   no packing, no shared canvas.
+6. Note which direction u runs and where u=0 lands, so the front of the tipi is known in TD
+   without guessing.
+7. Export FBX to `Models/`, transforms applied, scale 1.
+
+### What changes in TouchDesigner
+
+- Two Geometry COMPs, one per cone, each with its own Phong MAT and its own `colormap`.
+- `render1` already takes a list in its geometry parameter, so both render into one image and
+  the projector path is unchanged.
+- `camSchnappr` keeps pointing at the merged mesh (`Geosop` is `/project1/null2`) — calibration
+  needs the whole shape, not the split.
+- `uvmap_*` components collapse. Sweeping content around a tipi becomes a `tx` offset on a
+  Transform TOP, which is also how the animated searchlight effect gets built.
+- Layers need a target: either one layer stack per tipi, or a `Target` parameter (A / B / Both)
+  on each layer.
+
+### The three surfaces, measured
+
+Read off the current model, so the Blender work starts from fact rather than assumption:
+
+| Surface | Prims | u range | v range | Height (y) |
+|---|---|---|---|---|
+| `coneA` | 10 | 0.000–0.421 | 0.041–0.352 | 0–68216 |
+| `canopy` | 17 | 0.273–0.725 | 0.041–0.360 | 8424–20468 |
+| `coneB` | 10 | 0.578–0.999 | 0.041–0.352 | 0–68216 |
+
+This is what `contUV` in the filename means: the unwrap runs **continuously** left to right —
+cone A, then the canopy, then cone B — and the ranges deliberately overlap where the canopy
+meets each cone. One image flows across the whole structure, which is what makes a sweep from
+one tipi across the canopy to the other tipi work at all.
+
+That continuity is the thing to protect. Splitting into per-surface textures buys resolution
+and independent effects, but the sweep then has to be reconstructed from three coordinated
+offsets rather than coming for free. If each object's unwrap keeps u running in the same
+direction, the offsets are just the u ranges above, recorded as constants — so both are
+achievable, but it has to be a deliberate decision in Blender, not an accident of unwrapping.
+
+### Cost
+
+Two texture chains instead of one is roughly double the GPU work for the mapping stage. That
+stage is cheap compared to the effects, and unselected mappings don't cook, but it is worth
+watching once both tipis run live content.
+
+### Blender master file and the two unwraps (2026-08-30)
+
+`Models/Teepee2_master.blend` is the single source of truth for geometry and UVs. One mesh
+(32 verts, 37 polys), two UV layers:
+
+| Layer | What | Island shape |
+|---|---|---|
+| `UVMap` | The original unwrap that shipped with the FBX | Two cone **fans** joined by the canopy, sitting in the bottom third of the square |
+| `UVRect` | Cylindrical unwrap authored in Blender | Three full-width bands: coneA `v 0–0.38`, canopy `v 0.39–0.61`, coneB `v 0.62–1.0` |
+
+Export both to OBJ rather than FBX — `Models/Teepee2_fan.obj` and `Models/Teepee2_rect.obj`.
+OBJ carries one UV set per file, which is why there are two, and TouchDesigner's File In SOP
+reads them cleanly. The FBX route was abandoned: in 2025 the FBX COMP imports as POPs, and the
+converted geometry arrived with no `uv` attribute at all.
+
+In the master, `/project1/uvset` is a Switch SOP between the two, driven by the **UV Set**
+parameter on `/project1`. Whichever is selected feeds `textureiser_geo`. The two meshes occupy
+the same world space (the OBJs are scaled x1000 by `xf_rect` to match the baked FBX units), so
+switching changes only how texture lands, never where the geometry sits.
+
+**UV Set and a layer's Mapping have to agree.** Strip, GLSL, Hybrid and Stack all expect `fan`;
+Rect expects `rect`. Nothing enforces it yet.
+
+`camSchnappr` still calibrates against `null2`, the fan geometry. That is fine — the two meshes
+are the same shape and calibration only cares about shape — but it is worth knowing if the
+fan path is ever removed.

@@ -20,11 +20,12 @@ tools/td-version.sh sync
 | `Components/Sources/sources.tox` | 2025.32460 | macOS |
 | `Components/UVMaps/uvmap_glsl.tox` | 2025.32460 | macOS |
 | `Components/UVMaps/uvmap_hybrid.tox` | 2025.32460 | macOS |
+| `Components/UVMaps/uvmap_rect.tox` | 2025.32460 | macOS |
+| `Components/UVMaps/uvmap_stack.tox` | 2025.32460 | macOS |
 | `Components/UVMaps/uvmap_strip.tox` | 2025.32460 | macOS |
 | `Experiments/Light rotation/light_rotation.22.toe` | 2025.32460 | macOS |
 | `Experiments/Light rotation/light_rotation.toe` | 2025.32460 | macOS |
 | `Experiments/touch-designer-mcp/NewProject.1.toe` | 2025.32460 | macOS |
-| `Experiments/touch-designer-mcp/NewProject.toe` | 2025.32460 | macOS |
 | `Experiments/touch-designer-mcp/loungellusions_mcp.toe` | 2025.32460 | macOS |
 | `Loungellusions_master.toe` | 2020.28110 | Windows |
 | `Loungellusions_mcp_2025.toe` | 2025.32460 | macOS |
