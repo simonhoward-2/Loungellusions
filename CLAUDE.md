@@ -19,11 +19,14 @@ This is a **play repo**, not a work repo. Treat it that way.
 
 | Where | What |
 |---|---|
-| `Loungellusions_master.toe` | The main show file. Loads and mixes the `.tox` components. |
-| `Components/` | One folder per artwork, each a `.tox`. See `Components/README.md`. |
+| `Loungellusions_show.toe` | **The show file.** Sources, three layers, mix, mapping, projector calibration. |
+| `Loungellusions_master.toe` | The original 2020 file. Superseded, kept for reference. |
+| `Components/` | One folder per reusable piece, each a `.tox`. See `Components/README.md`. |
+| `Components/Layers/` | The three built artworks: `mariokart`, `microscope`, `vhs`. |
 | `Experiments/` | Scratch. One folder per experiment. No rules here on purpose. |
 | `Patches/` | Older standalone patches (pre-Components). Migrate as we touch them. |
-| `Models/` | Geometry (`.fbx`) for projection surfaces. |
+| `Models/` | `Teepee2_master.blend` is the source of truth for geometry and UVs; `.fbx` / `.obj` are exports. |
+| `Archive/` | Experiments that didn't make the show, with a README saying why. |
 | `Backup/` | TD autosaves. Don't work in here. |
 | `docs/` | Overview, standards, tools. Start at `docs/OVERVIEW.md`. |
 | `tools/` | Repo scripts. `td-version.sh` reads TD build numbers; `hooks/` holds the git hooks. |

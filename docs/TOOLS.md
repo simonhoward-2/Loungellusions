@@ -78,11 +78,26 @@ It picks the newest installed TouchDesigner automatically; override with
 **Gotcha:** `toeexpand` exits with status 1 even when it succeeds. The script checks for
 the `.build` file instead of trusting the exit code.
 
+## Blender MCP
+
+Lets an agent drive Blender the way the TouchDesigner MCP drives TD — read the scene, run
+Python, export files, screenshot the viewport.
+
+- **Status:** connected and working.
+- **Used for:** `Models/Teepee2_master.blend` — measuring the UV islands, authoring alternate
+  unwraps, and exporting OBJ.
+- **Handy trick:** `bpy.ops.uv.export_layout()` writes the UV layout to PNG, which is the
+  fastest way to *see* what an unwrap actually looks like rather than reasoning about it.
+
+**Gotcha:** export geometry as `.obj`, not `.fbx` — see Standard S16. FBX loses UVs entirely
+on the TouchDesigner side.
+
 ## Other tools
 
 | Tool | Does | Reach for it when |
 |---|---|---|
-| | | |
+| Derivative palette `audioAnalysis` | Band splitting, kick and snare detection, spectral centroid | Any audio reactivity. It is inside `Components/Audio/audio.tox` |
+| `Palette-Tools` (Richard Burns) | Bloom, film, VHS, glitch, lines | Effect vocabulary. Inside `Components/PaletteFX` |
 
 ## Skills
 

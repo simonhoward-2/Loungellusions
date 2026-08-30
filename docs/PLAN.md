@@ -305,3 +305,36 @@ Rect expects `rect`. Nothing enforces it yet.
 `camSchnappr` still calibrates against `null2`, the fan geometry. That is fine — the two meshes
 are the same shape and calibration only cares about shape — but it is worth knowing if the
 fan path is ever removed.
+
+---
+
+## 7. Where this actually landed (2026-08-30)
+
+**Built and in the show file** (`Loungellusions_show.toe`):
+
+- Three layers — `mariokart`, `microscope`, `vhs` — each owning source, effects, audio and mapping
+- Two mapping methods, `ramp` and `mirror`, with the mirror arcs tuned per tipi (left 200-310, right 50-160)
+- One audio analysis publishing eight channels, reaching both effect stages in every layer
+- Composition and mastering at the top level, annotated regions, commented nodes
+
+**Tried and archived** — see `Archive/README.md` for the full account:
+
+| Attempt | Result |
+|---|---|
+| Raise texture resolutions | Broke the mapping. Aspect ratio, not resolution, was the constraint |
+| Re-lay UVs in TouchDesigner (stack) | Drawn fans covered 41% of an island needing 68% |
+| Cylindrical unwrap in Blender (rect) | Works, but a cone is developable — a rect unwrap smears toward the apex |
+| Same with a truncated tip | Fixes the sawtooth gaps, still non-isometric |
+| Fan islands packed uniformly | Packing correct (~8x on paper), placing the drawn fans overshot by 1.5x |
+| **Split the mesh in half, one texture each** | **Worked — ~6.4x more pixels per tipi, verified** |
+
+**The resolution question is still open.** Today each tipi is textured from roughly 705 x 115
+pixels. The split-halves route reached ~1267 x 410 and is the only approach that improved
+anything without breaking alignment, but it changes the render path and cuts the canopy down
+the middle. It is parked in `Archive/`, not abandoned.
+
+**The measurement to build first, next time:** render the geometry with a shader that outputs
+UV coordinates as colour. That reads back exactly which texel each surface point samples, and
+would have caught all four failures above in minutes rather than hours. Coverage ratio between
+drawn content and island area is the pass/fail number — 1.0 is correct, 0.6 and 1.5 are the
+two failures we measured.
