@@ -104,6 +104,26 @@ The `color1`..`color4` parameters are not the palette. The Ramp TOP reads a tabl
 its `dat` parameter (`<name>_keys`), with columns `pos, r, g, b, a`. Create that DAT and append
 rows. Editing the table changes the palette live.
 
+### Constant CHOP: only set the channels you use
+
+A `constantCHOP` ships with 40 `constN{name,value}` slots but only the ones with a non-empty
+`constNname` become channels — the rest are inert. Set names and values only for the channels
+you want, and leave the rest alone. Do not iterate through the remaining slots setting names
+to `''` or values to `0` "to clean up": those slots weren't producing channels anyway, and
+touching them just adds noise to the diff.
+
+### Parameter expressions: relative `..` paths can silently return None
+
+In a **parameter** expression (not a DAT script), `op('../foo')` sometimes resolves to `None`
+and the parameter raises `TypeError: 'NoneType' object is not subscriptable` at eval — no
+red-flag error appears until you try to read the value. Root cause is context-dependent, and
+worth a fresh look each time. Two reliable alternatives:
+
+- `parent(N).op('name')` — explicit, works from any parameter context
+- Absolute path — `op('/project1/foo')` — verbose but unambiguous
+
+Prefer `parent(N).op(...)` for portability inside toxes.
+
 ### Sparse noise costs about six times what perlin does
 
 The Noise TOP's `sparse` type is in a different price bracket from the rest. Measured on the

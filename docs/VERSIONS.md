@@ -25,6 +25,7 @@ tools/td-version.sh sync
 | `Components/Layers/vhs.tox` | 2025.32460 | macOS |
 | `Components/PaletteFX/palettefx.tox` | 2025.32460 | macOS |
 | `Components/Sources/sources.tox` | 2025.32460 | macOS |
+| `Components/UVMaps/uvmap_mariokart.tox` | 2025.32460 | macOS |
 | `Components/UVMaps/uvmap_mirror.tox` | 2025.32460 | macOS |
 | `Components/UVMaps/uvmap_ramp.tox` | 2025.32460 | macOS |
 | `Experiments/Light rotation/light_rotation.22.toe` | 2025.32460 | macOS |

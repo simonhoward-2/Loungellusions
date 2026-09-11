@@ -194,3 +194,23 @@ has been running off geometry baked into a locked `select1` SOP ever since.
 
 OBJ carries one UV set per file, so multiple unwraps mean multiple exports from the one
 master `.blend`.
+
+## S17 — Every CHOP shows its graph on the tile
+
+**What:** Every CHOP has its node-tile viewer on so its current values / waveform read at a
+glance. One flag:
+
+- `chop.viewer = True`
+
+CHOP viewers are cheap — the CHOP is cooking anyway, the tile just draws its samples. This
+does **not** apply to TOPs, SOPs, or COMPs; forcing tile display on those triggers extra work
+(a `baseCOMP` with `.display = True` has to render its internal `opviewer` TOP; a TOP tile
+draws pixels). Leave those alone unless a specific stage benefits from a live thumbnail — set
+it per-node then, not as a blanket rule.
+
+**Why:** CHOPs drive everything — audio bus, LFOs, math on parameters. When something looks
+wrong the first question is always "is that value what I think it is". A live graph on the
+tile answers it without opening the node.
+
+**Apply:** When creating a CHOP over MCP, `chop.viewer = True` in the same script. When
+touching an existing CHOP whose tile is blank, flip it.

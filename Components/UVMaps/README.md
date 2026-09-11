@@ -6,7 +6,8 @@ input and one output, instanced inside every layer so a layer owns its own mappi
 | Component | Method |
 |---|---|
 | `uvmap_ramp.tox` | **Ramp.** The UV map is built from ramp masks — the original approach that shipped with the model. Its generator is `uvgen_ramp` |
-| `uvmap_mirror.tox` | **Mirror.** Two arc edges set a focal point on each cone; content mirrors or extends outward from there. Its generators are `uvgen_compose_left` and `uvgen_compose_right`, one per tipi |
+| `uvmap_mirror.tox` | **Mirror, animated.** Same mirror method as below, plus an internal `lfo_split` CHOP that drives `crop4.cropbottom` and `crop5.croptop` — LFO 0 = classic 50/50 split, LFO 1 = no crop. Used by `vhs` |
+| `uvmap_mariokart.tox` | **Mirror, static.** The original mirror method with fixed 50/50 crops. Kept separate from `uvmap_mirror.tox` so the mariokart layer can't inherit the animation. Used by `mariokart` (node renamed to `uv_mariokart` inside that layer) |
 
 Both output 1280x360 — the unrolled tipi strip.
 
