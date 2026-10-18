@@ -34,12 +34,25 @@ audio   ─ microscope ─┼─ composition ─ master ─ show_tex ─ camSchn
         ─ vhs        ─┘
 ```
 
-Two mapping methods are available to any layer: **ramp** (masks built from ramps) and
-**mirror** (two arc edges set a focal point per cone, content mirrors or extends outward).
+Three mapping methods are available to any layer: **ramp** (masks built from ramps),
+**mirror** (two arc edges set a focal point per cone, content mirrors or extends outward)
+and **top-down** (the footage is already a view from above, so the geometry decides where
+every pixel lands).
 
-## Media (lives in Google Drive, not git)
+### 3D pieces come the other way round
 
-Sibling folder to this repo: `../Loungellusions Media`
+A Blender piece is authored *on* the tipis rather than mapped onto them: animate against the
+tipi models in `Models/Teepee2_master.blend`, shrinkwrap the result onto the tipi surface,
+then render from a camera looking straight down and export the mp4 to
+`../Loungellusions Media/Renders/`. In the show it goes through the `render3d` layer with the
+`topdown` mapping, which undoes the top-down view and puts the animation back on the cones it
+was drawn on. These work as whole scenes and as the transitions between the other scenes.
+
+## Media (lives in OneDrive, not git)
+
+Sibling folder to this repo: `../Loungellusions Media` — a symlink to
+`~/Library/CloudStorage/OneDrive-Personal/Projects/TouchDesigner/Loungellusions Media`.
+Never copy the media into the repo.
 
 | Folder | Holds |
 |---|---|

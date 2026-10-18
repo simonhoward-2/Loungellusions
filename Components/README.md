@@ -10,9 +10,9 @@ like, what it needs, and what drives it (Standard S3).
 | `Demo/` | Animated ramp cluster. The `generative` source |
 | `FXTest/` | Six effect lanes with per-lane wet/dry and blending between lanes |
 | `PaletteFX/` | Test bench for five Palette-Tools effects, same shape as FXTest |
-| `UVMaps/` | The three ways a flat image lands on the tipi: strip, GLSL, hybrid |
+| `UVMaps/` | The ways a flat image lands on the tipi: ramp, mirror, top-down |
 | `Layer/` | The channel template: named source, FX, its own mapping, audio |
-| `Layers/` | The three built artworks — `mariokart`, `microscope`, `vhs` |
+| `Layers/` | The built artworks — `mariokart`, `microscope`, `vhs`, `render3d` |
 
 **How they stack in the master:**
 

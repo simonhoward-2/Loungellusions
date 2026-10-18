@@ -22,12 +22,14 @@ tools/td-version.sh sync
 | `Components/Layer/layer.tox` | 2025.32460 | macOS |
 | `Components/Layers/mariokart.tox` | 2025.32460 | macOS |
 | `Components/Layers/microscope.tox` | 2025.32460 | macOS |
+| `Components/Layers/render3d.tox` | 2025.32460 | macOS |
 | `Components/Layers/vhs.tox` | 2025.32460 | macOS |
 | `Components/PaletteFX/palettefx.tox` | 2025.32460 | macOS |
 | `Components/Sources/sources.tox` | 2025.32460 | macOS |
 | `Components/UVMaps/uvmap_mariokart.tox` | 2025.32460 | macOS |
 | `Components/UVMaps/uvmap_mirror.tox` | 2025.32460 | macOS |
 | `Components/UVMaps/uvmap_ramp.tox` | 2025.32460 | macOS |
+| `Components/UVMaps/uvmap_topdown.tox` | 2025.32460 | macOS |
 | `Experiments/Light rotation/light_rotation.22.toe` | 2025.32460 | macOS |
 | `Experiments/Light rotation/light_rotation.toe` | 2025.32460 | macOS |
 | `Experiments/touch-designer-mcp/NewProject.1.toe` | 2025.32460 | macOS |

@@ -7,7 +7,8 @@ live inside this component now, not scattered across the top level.
 
 **Looks like:** nothing on its own. It's the shelf, not the artwork.
 
-**Needs:** the Drive media folder as a sibling of the repo (`../Loungellusions Media`).
+**Needs:** the media folder as a sibling of the repo (`../Loungellusions Media`, a symlink
+into OneDrive). `Samples/` is footage we found; `Renders/` is footage we made in Blender.
 
 | Name | What |
 |---|---|
@@ -16,6 +17,7 @@ live inside this component now, not scattered across the top level.
 | `gem` | `Samples/microscope/micro_gem.mov` |
 | `underworld` | `Samples/microscope/micro_underworld.mov` |
 | `scroll` | `Samples/microscope/micro_assorted_scroll.mov` |
+| `car_trail` | `Renders/car-trail-flat.mp4` — a Blender render, not a sample. Top-down unwrap, 2048x1008, 24fps, 250 frames. Pair it with the `topdown` mapping |
 | `generative` | Output of the nested `demo` component — animated ramps, no file |
 | `syphon1`–`syphon6` | Live Syphon inputs. Black until something publishes |
 

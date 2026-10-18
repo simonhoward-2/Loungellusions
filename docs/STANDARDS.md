@@ -214,3 +214,50 @@ tile answers it without opening the node.
 
 **Apply:** When creating a CHOP over MCP, `chop.viewer = True` in the same script. When
 touching an existing CHOP whose tile is blank, flip it.
+
+## S18 — Two kinds of layer: image and surface
+
+**What:** A layer delivers its content to the show in one of two ways, and says which in its
+README row.
+
+- An **image layer** remaps its content into the model's UV layer 0 and hands over one TOP.
+  It flows `switch1` → `composition` → `master` → `show_tex` → `Render_Engine/geo1`, wearing
+  `constant1`. Ramp and mirror mappings work this way. Three of the four layers are this.
+- A **surface layer** hands over a *mesh and a material* instead. It writes its own unwrap
+  into **UV layer 1** of the show mesh, publishes that mesh on a SOP output, and supplies the
+  material to wear with it. `switch2` picks the mesh on the scene index, `geo1.material`
+  picks the material on the same index. `render3d` is the only one so far.
+
+Both go through the same `geo1` and the same calibrated cameras, so there is one render pass
+either way and projector calibration is untouched.
+
+**Why:** The show strip is 1280x360 and the model UVs occupy v 0.041–0.360 of it — about
+1280x115 pixels for both tipis, against a cone whose slant is 85 world units. Content that is
+already in the tipis' own space, like a Blender render, loses most of itself going through
+that bottleneck. A surface layer skips it and samples the source at full resolution.
+
+**Two traps, both load-bearing:**
+
+- `switch2`'s inputs are **sequential** while its index is the **scene number**. It used to
+  have two inputs and survive scenes 2 and 3 by clamping. Adding a mesh at the end means
+  every scene below it needs a real input or it will grab the wrong mesh. Four scenes, four
+  inputs.
+- A surface layer **never passes through `master`**, so `Masterlevel` and `Masterfade` do not
+  reach it. `render3d/surface_topdown/lvl_master` re-applies both by expression. Any future
+  surface layer needs the same node or the blackout will not cover it.
+
+## S19 — UV components are templates; a layer that diverges branches
+
+**What:** `Components/UVMaps/` holds the generic methods. A layer links to one with
+`externaltox` **only while it uses it unchanged**. The moment a layer needs its own version,
+either clear `externaltox` so the component embeds in that layer's own `.tox`, or save a
+named branch `uvmap_<method>_<layer>.tox`. The layer's README row records which.
+
+**Why:** This already happened once without a rule. `uvmap_mariokart.tox` exists only so the
+mariokart layer cannot inherit `uvmap_mirror`'s `lfo_split` animation — a fork made to stop a
+change leaking, with nothing written down to say so. Animating a shared mapping should never
+be able to reach another artwork by accident.
+
+A surface mapping is SOP + MAT, not TOP in / TOP out, so it does not fit the UVMaps shape and
+is not listed in a layer's `Mapping` menu. It lives inside the layer that owns it.
+
