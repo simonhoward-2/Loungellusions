@@ -1,9 +1,29 @@
-# Plan — what to try next
+# Plan
 
-Play-first plan. Experiments at the top, engineering at the bottom where it belongs.
-Nothing here is a commitment; if something looks boring on the tipi, drop it.
+**Phase: build.** The experimenting is largely done and the work now is making this
+production-ready. Simon and Tom alternate as editors, so this document exists to keep one
+shared picture of what is decided, what is optional and what is next — standardised enough
+that either of us can pick it up cold, loose enough to stay out of the way.
 
-Immediate goal: **friends over tomorrow night, make things look weird on a surface.**
+Read sections 7-10 before starting anything. 7 and 8 are measurements and dead ends that cost
+real hours; 9 and 10 are the current design.
+
+## Status at a glance
+
+| Area | State |
+|---|---|
+| First play night | **Done.** Section 2, kept as a record |
+| Mapping experiments | **Optional.** Section 3 — a menu to pull from, not a queue |
+| Tools installed | **Done.** Section 6 |
+| Per-tipi texturing / unwrap | **One unwrap complete.** Section 7. Resolution work still parked |
+| 3D pipeline | **In progress.** The current work — Blender renders landed on the tipis |
+| Layers, scenes, mixer | **Designed, not built.** Section 9 |
+| Resolume as the mixer | **Alternative, not chosen.** Section 9A — every scene a clip, cooked on demand |
+| Audio reactivity | **Planned.** Analysis is built and wired; using it per scene is still to come |
+| MIDI input | **Designed, not built.** Section 10 — four knobs, one component, referenced everywhere |
+| Hand tracking | **Not now.** Parked deliberately, not forgotten |
+
+Sections 1-8 are history and reference. Sections 9 and 10 are what we are building.
 
 ---
 
@@ -44,7 +64,10 @@ and run `tools/td-version.sh sync` after, or work on a copy tomorrow (recommende
 
 ---
 
-## 2. Tomorrow night
+## 2. Tomorrow night — DONE
+
+*Happened. Kept because the setup order was right and the next time we take this somewhere it
+is the same list. Everything below is past tense now.*
 
 Half an hour of setup, then play. Don't spend the evening in the network editor.
 
@@ -70,7 +93,13 @@ unit everything else becomes. Don't design it; make it, then look at it.
 
 ---
 
-## 3. The mapping experiments
+## 3. The mapping experiments — OPTIONAL
+
+*A menu, not a queue. None of these block anything; pull one when a scene needs a look it
+hasn't got. 3.1 and 3.2 have since been overtaken in part — the Texture SOP trick is what the
+top-down surface mapping in section 9 uses, and the UV-as-colour measurement asked for in
+section 8 now exists. 3.3 is the one still genuinely unexplored, and still the most likely to
+produce something nobody has seen.*
 
 The idea worth chasing: **a cone is very forgiving, and the same footage becomes a different
 artwork depending on how it's mapped.** Free variety, no new content. And every style below
@@ -135,22 +164,28 @@ moment you put real footage through it. Ten seconds of grid first, then play.
 
 ## 4. What to try after that
 
-Rough queue, not a schedule. Pull whatever's most fun.
+Rough queue, not a schedule. Status marked per item.
 
-- **Audio reactive.** `Audio Device In CHOP` + the `audioAnalysis` palette component gives
+- **Audio reactive — PLANNED.** The analysis exists: `Components/Audio/` publishes eight
+  channels and every layer reads them. What is still to come is using it deliberately per
+  scene rather than as a wobble on everything. `Audio Device In CHOP` + the `audioAnalysis` palette component gives
   bands and beats immediately. One idea worth keeping as things grow: analyse **once**,
   centrally, and have components read the same channels — otherwise each artwork drifts to
   its own rhythm and the tipis stop looking like one piece. Handy trick for a room full of
   friends: mic input works fine as a stand-in for the FOH line.
 - **A second and third test tox**, so the master finally has something to mix between.
   That's Aim 3, and it only gets real once there are two things to crossfade.
-- **MIDI on the knobs.** `MIDI In Map CHOP` onto the promoted custom parameters. Bind to the
+- **MIDI on the knobs — PLANNED, not started.** Wants doing alongside the mixer panel in
+  section 9, so the same controls exist in hardware and on screen. `MIDI In Map CHOP` onto the promoted custom parameters. Bind to the
   component's parameters rather than to operators inside it, so rebuilding the guts doesn't
   cost the mapping.
-- **Hand tracking** via <https://github.com/torinmb/mediapipe-touchdesigner> — free, GPU,
+- **Hand tracking — NOT NOW.** Parked by choice. Good party trick, no place in an unattended
+  show. Via <https://github.com/torinmb/mediapipe-touchdesigner> — free, GPU,
   no install. Pinch controls a parameter. This is the "at station controls" idea from the
   design doc, and it's a good party trick on its own.
-- **The 3D pipeline**, when there's 3D content to justify it: geometry in a rendered scene
+- **The 3D pipeline — IN PROGRESS.** This is the current work. Blender animations authored on
+  the tipi models, shrinkwrapped, rendered top-down and landed back on the geometry — see
+  section 9 and `Components/Layers/README.md`. The original note read: geometry in a rendered scene
   with the tipi as the projection surface, rather than a flat source mapped onto it. Harry's
   bugs and critters, and the "looking glass / snow globe" tipi-cam idea.
 
@@ -174,7 +209,7 @@ not before.
 
 ## 6. Tools
 
-**Install tomorrow, before friends arrive**
+**Installed — DONE**
 
 - **[FunctionStore_tools](https://github.com/function-store/FunctionStore_tools)** — free.
   Promote a parameter to the parent in one click, place operators with your own defaults,
@@ -202,7 +237,7 @@ appear in the palette for every project.
 
 ---
 
-## 6. Per-tipi texturing and the Blender unwrap
+## 7. Per-tipi texturing and the Blender unwrap
 
 Decided 2026-08-28, after measuring that the packed-strip approach caps each tipi at 640x115
 pixels and that re-laying UVs in TouchDesigner distorts the islands (the drawn fan covered 41%
@@ -308,7 +343,12 @@ fan path is ever removed.
 
 ---
 
-## 7. Where this actually landed (2026-08-30)
+## 8. Where this actually landed (2026-08-30) — SUPERSEDED
+
+*Kept as a record of what was tried and measured. The architecture here — three layers, a
+composition switch, mastering at the top level — is replaced by section 9. The measurement
+notes at the end of this section are still live and still worth reading; the structure above
+them is not.*
 
 **Built and in the show file** (`Loungellusions_show.toe`):
 
@@ -338,3 +378,667 @@ UV coordinates as colour. That reads back exactly which texel each surface point
 would have caught all four failures above in minutes rather than hours. Coverage ratio between
 drawn content and island area is the pass/fail number — 1.0 is correct, 0.6 and 1.5 are the
 two failures we measured.
+
+---
+
+## 9. Layers, scenes and the mixer (2026-10-19)
+
+### The short version
+
+- A **layer** is a channel — source, effects, audio, its own mapping. General control; a layer
+  is something you tune once and it affects everything that uses it. It has an `Active` toggle.
+- A **scene** is a `.tox` that arranges some layers with nodes. It names the layers it needs in
+  one space-separated field. It has **no length and no transition** — those are the mixer's.
+- A scene is **available** when every layer it names is Active. Derived, never stored. Switch a
+  layer off and the scenes needing it drop out of rotation on their own.
+- The **mixer** owns the show: it finds the available scenes, decides how long each runs, picks
+  the next one (in order, or randomly), and runs a transition into it.
+- **Transitions are plug-ins.** One `.tox` each, fixed contract. Adding one is dropping a file
+  in a folder; the mixer never changes.
+- The show runs **unattended**, and is still **drivable by hand**: the same two buses, a panel
+  showing what is on, what is next and why a scene is missing, and controls to pause, take and
+  enable/disable.
+- **Resolume** is wanted for transitions, hands-on mixing and audio-reactive effects — a design
+  and rehearsal tool first. It takes two Syphon feeds, A and B, never one per scene. See below.
+
+### The flow
+
+```
+Components/Layers/*.tox              Components/Scenes/*.tox
+  Active (toggle)                      Layers = "microscope cartrail"
+        │                                        │
+        └────────────────┬───────────────────────┘
+                         ▼
+                  mixer / pool  (Script DAT)
+          scenes whose every named layer is Active
+                         │
+                         ▼
+                  mixer / clock  (Timer CHOP)
+          Scenelength ± Lengthvariance, one shot per scene
+                         │ onDone
+                         ▼
+                  mixer / choose
+          Randomness, weights, no-repeat history
+                         │
+            ┌────────────┴────────────┐
+          bus_a                     bus_b
+       (current scene)           (next scene)
+            └────────────┬────────────┘
+                         ▼
+                mixer / transition
+     switch over Components/Transitions/*.tox, Progress 0..1
+                         │
+                      master
+                         │                     mixer / panel
+                     show_tex ───────────┐     now · next · transition · last
+                                         │     pool + why each scene is in or out
+                                         │     Auto · Play/Pause · Cue · Take · Fader
+                                         ▼
+                              geo1   uv0: the scene
+                                     uv1: 3D overlay, added on top
+                                         │
+                                  cam1 / cam2
+                                         │
+                                    projectors
+```
+
+Only two scenes cook, whatever the pool size — that is the reason for two buses rather than a
+switch over all of them.
+
+---
+
+### Layers
+
+Live in `Components/Layers/`, one `.tox` each, as now. Two additions:
+
+- **`Active`** toggle on the layer COMP. Off means the layer is out of the show.
+- When off, the mixer sets `.allowCooking = False` on it, so an inactive layer costs nothing.
+  This is the real lever — a bypassed-but-cooking layer still burns GPU.
+
+Nothing else about layers changes. They keep owning their source, effects, audio and mapping
+(S13), and the `Mapping` menu still chooses how their image lands.
+
+### Scenes
+
+New folder, `Components/Scenes/`, one `.tox` each. A scene is where the blending between layers
+is wired with nodes — composites, crosses, masks, whatever the look needs. That is why scenes
+are components and not table rows: the arrangement is a patch, not a parameter.
+
+Each scene carries:
+
+| Parameter | What |
+|---|---|
+| `Active` | Take this scene out of rotation by hand, without touching its layers |
+| `Layers` | Space-separated layer names, e.g. `microscope mariokart cartrail`. Any number |
+| `Weight` | How often it comes up when the mixer is picking randomly. Default 1 |
+
+No length. No transition. No fade. A scene does not know how long it will be on screen or what
+comes before or after it, and should not be written as though it does.
+
+**More than two layers is allowed.** The cost is real but bounded: a bus cooks the layers its
+scene names, so the worst case is the two heaviest scenes running at once during a transition.
+Worth watching rather than forbidding — if a five-layer scene drops frames, that is the scene's
+problem to solve, not a rule.
+
+**A scene naming a layer that does not exist is an error, not an empty slot.** The mixer reports
+it rather than quietly dropping the scene, because a typo that silently removes a scene from the
+rotation is invisible until the night.
+
+### How layers wire into scenes
+
+A layer is a **token on disk and an instance in the scene**. The `.tox` in `Components/Layers/`
+is the definition; a scene that names a layer contains its own instance of it, loaded from that
+file with `externaltox`. Scenes do not share a layer — they each get one.
+
+That sounds wasteful until you look at a transition. **Both buses are live at once.** If two
+scenes both used one shared `microscope` and wanted different settings, there would be no right
+answer during the crossfade — you would see one state, not two, and which one would depend on
+cook order. Instancing removes the question. It is the same reason the uvmap components are
+instanced inside each layer rather than shared (S13), one level up.
+
+**Where a parameter lives decides how far it reaches:**
+
+| Level | Holds | Changing it affects |
+|---|---|---|
+| **Token** — `/project1/layers/<name>` | `Active`, plus the settings you want true everywhere: default source, base levels, house look | Every scene using that layer |
+| **Instance** — inside a scene | Whatever this scene wants different | That scene only |
+
+An instance parameter inherits by **expression** pointing at the token:
+
+```
+op('/project1/layers/microscope').par.Audiosens
+```
+
+and is overridden by replacing that expression with a value. This is worth doing exactly this
+way rather than with a copy-on-create: a parameter in expression mode is inherited and a
+constant one is overridden, so **the UI already tells you which is which** without a convention
+to remember. Reset an override by putting the expression back.
+
+So: Mario Kart can be audio-reactive in one scene and still in another; the same layer can take
+its hue from a knob here and its bloom from the same knob there. Nothing is copied, nothing is
+shared, and the two can run at once through a crossfade without arguing.
+
+**The cost, honestly:** two scenes using the same layer means two copies of that layer cooking
+while they transition. That is the cost the two-bus design already pays, so it is bounded by the
+two heaviest scenes rather than by the size of the bank.
+
+**The thing that will bite:** a scene stores overrides against *named* parameters. Rename a
+parameter on a layer and every scene that overrode it is carrying a dead reference. There is no
+way around that except knowing it — see S20.
+
+### Availability
+
+```
+available(scene) = scene.Active and all(layer.Active for layer in scene.Layers)
+```
+
+Two gates. A scene can be switched off directly, or fall out because something it needs did.
+The panel shows which, because "disabled" and "its layer is disabled" are different problems
+and look identical from the outside.
+
+Computed by a Script DAT scanning both folders. It is the whole dependency mechanism and there
+is nothing to keep in sync by hand — which is the point of inferring it from the UI rather than
+maintaining a table.
+
+**If a layer is switched off while its scene is playing, the scene finishes.** It leaves the pool
+afterwards. Cutting mid-scene on a parameter change is worse to watch than four more seconds of
+something you have just decided you do not want.
+
+**If the pool is empty**, the mixer runs a fallback scene that names no layers. Black, or the
+generative source. Unattended shows need a defined answer to "everything is off" that is not a
+dead projector.
+
+### The mixer
+
+One COMP. Its parameters are the show's controls:
+
+| Parameter | What |
+|---|---|
+| `Scenelength` | Base seconds per scene |
+| `Lengthvariance` | 0–1. How much each scene's length wanders either side of the base |
+| `Randomness` | 0 walks the pool in order, 1 picks weighted-random, between is the odds of jumping |
+| `Fadetime` | Transition duration |
+| `Transitionmode` | Which transition, or `cycle`, or `random` |
+| `Auto` | Sequencer drives the buses. Off hands them to you |
+| `Play` / `Pause` | Pause holds the current scene indefinitely — the clock stops, nothing transitions. It does not stop cooking |
+| `Next` | Pulse to advance now, using the loaded transition and fade |
+| `Cue` | Load a chosen scene into B without taking it |
+| `Take` | Run the transition into B now |
+| `Fader` | Manual progress 0 to 1. Overrides the clock while `Auto` is off |
+
+Changing `Scenelength` mid-show retimes from the current scene onward rather than jumping — the
+clock is a one-shot per scene, so the new value simply applies to the next one.
+
+### Driving it by hand
+
+Two drivers, one engine. With `Auto` on, the clock and the chooser fill bus B and run the
+transition. With `Auto` off, you do: cue a scene into B, move the fader or hit take. Nothing
+else changes — the same buses, the same transitions, the same pool. That matters more than it
+sounds, because it means the manual path cannot drift out of sync with the automatic one;
+there is only one path.
+
+`Pause` is deliberately not `Auto` off. Pause means *stay on this scene* — the clock stops and
+no transition fires, but the sequencer is still in charge and will carry on from where it was.
+Use pause to hold something that is working; use `Auto` off to take over.
+
+### The panel
+
+A Container COMP in `Components/Mixer/`, hosted by the existing `control_panel`, for a Perform
+Mode window. Everything it shows comes from one Table DAT the mixer writes — the UI reads, it
+never computes. One place to look when the panel and the output disagree.
+
+**Readouts**
+
+| Shows | Why it earns its space |
+|---|---|
+| **Now** | Current scene, and how long is left on it |
+| **Next** | What is cued, and whether the chooser picked it or a human did |
+| **Transition** | Which one is loaded, and the fade time it will use |
+| **Progress** | Transition progress while one is running, so a long cross is visibly a cross and not a freeze |
+| **Last** | The scene just left, so a good accident can be got back to |
+| **Pool** | Every scene, marked available / off by hand / off because of a layer — **and which layer** |
+
+That last column is the one that saves an evening. A derived pool means scenes can vanish from
+rotation for a reason that is three nodes away, and the failure is silent: the show simply stops
+showing something. Naming the blocking layer turns a mystery into a glance.
+
+**Live controls**: `Auto`, `Play` / `Pause`, `Cue`, `Take`, `Fader`, `Next`, plus a toggle per
+scene and per layer. The per-layer toggles are the ones that change the shape of the show —
+switching off `vhs` should visibly grey out every scene that named it.
+
+Worth building the panel **before** the sequencer. It is the only way to see whether the pool
+logic is right, and it turns the mixer from something you debug in the network editor into
+something you debug by looking at it.
+
+### Transitions
+
+`Components/Transitions/`, one `.tox` each, all to the same contract:
+
+- two TOP inputs, `A` and `B`
+- one `Progress` parameter, 0 to 1
+- one TOP output
+
+The mixer switches between them, so only the selected transition cooks and **adding a transition
+is dropping a file in the folder** — no mixer edit, no menu to extend by hand if the menu is built
+from the folder listing.
+
+First one to build, and the default:
+
+- **`fade_black`** — A down to black over the first half, B up from black over the second.
+
+Obvious ones after that: `cross` (a straight dissolve), `blend` (composite A and B with a mode —
+add, screen, difference — and pass through it, A → blended → B), and eventually a wipe driven in
+UV space, which on this geometry reads as a sweep travelling around the cones and across the
+canopy rather than a line crossing a rectangle. That last one is the one worth the effort; it is
+the only transition on the list that could not be done on a flat screen.
+
+### Resolume: the mixing surface, not the scene store
+
+What Resolume is actually wanted for: **transitions, hands-on mixing that reads at a glance, and
+audio-reactive effects on the mixed image.** Not storing scenes. That changes the shape of the
+integration, and makes it much cheaper than it first looked.
+
+**Two feeds out, one back.**
+
+```
+TouchDesigner                         Resolume                    TouchDesigner
+  bus_a ── Syphon ──┐
+                    ├──  crossfade · transitions · FX  ── Syphon ──  map · calibrate · project
+  bus_b ── Syphon ──┘                                                 + uv1 overlay added here
+```
+
+Because the mixer already runs two buses, TD publishes exactly **two** Syphon feeds, not one per
+scene. The cooking question answers itself: two scenes cook, same as before, and the size of the
+scene bank is irrelevant.
+
+| Stays in TouchDesigner | Moves to Resolume |
+|---|---|
+| Layers, scenes, the pool and why a scene is unavailable | The crossfader and the transition library |
+| Scene choice, weighting, randomness | Effects, and audio reactivity on the mixed image |
+| MIDI knob values and their bindings | The visual mixing surface |
+| Geometry, UV sets, camSchnappr, the overlay | |
+
+Section 9's transition subsystem then does not need building, and the panel shrinks to the pool
+and the readouts — Resolume shows now and next far better than a Text COMP will.
+
+**One feed per scene does not work, for the record.** A Syphon Out TOP cooks every frame whether
+or not a client is attached, because TD cannot see who is listening. N scenes as N clips means N
+scenes cooking — the inverse of what the two-bus design buys. It can be fixed by having Resolume
+send OSC on clip-connect and TD deactivate the unused outputs, but that is a control channel
+built to tell TD something its own mixer knew a frame earlier.
+
+**What it costs**
+
+- Two Syphon hops, out and back. A few frames. Imperceptible for audio-coupled effects.
+- A second application in an **unattended** show's failure path. This is the real objection and
+  it has not gone away.
+- Mixing happens in strip space, so the **uv1 overlay cannot take part**. It has to composite
+  after the return — which works, it is additive and scene-independent, but it means the sharp
+  path and the mixed path are not the same path.
+- Timing. Resolume's auto-pilot cycles a deck; it knows nothing about layer availability or the
+  pool. So either TD decides when to transition and tells Resolume over OSC, or Resolume runs the
+  clock and TD follows it. If TD is sending the progress value anyway, TD may as well run the
+  cross.
+
+**Where that lands.** Resolume earns its place wherever **someone is driving** — designing
+scenes, rehearsing, finding a look by hand with a crossfader and a bank of effects. That is a
+genuinely better tool than anything we would write, and what it finds can be baked back into TD
+as scene settings.
+
+It earns much less on a night when nobody is driving, which is the night we are building for. So:
+**a design and rehearsal tool first, and a show tool only if the unattended path is proven to
+survive it.** Prove TD alone end to end, then decide whether Resolume rides along.
+
+**The line not to cross:** letting Resolume do the projection mapping. That replaces camSchnappr
+and makes the uv1 surface path impossible, because Resolume has no model of the tipis. The sharp
+path exists *because* TouchDesigner knows the geometry.
+
+Section 9A sketches the other way round: Resolume as the whole mixer, with every scene as a clip.
+
+### What this replaces
+
+`switch1`, `composition`, `blend_mix` and the `button1` / `count1` / `null3` scene counter all
+go or get rewired. `switch2` currently reads that same counter for geometry and would take the
+mixer's scene channel instead.
+
+`blend_mix` is worth reading before deleting — it is a built blender wired to nothing, with a
+feature-versus-microscope switch and three composite modes. It is the ancestor of this section.
+
+### Open questions this does not settle
+
+- **Resolution.** Section 7's per-tipi split is still parked in `Archive/`. Section 8 asked for a
+  UV-coordinates-as-colour measurement before trying again — that now exists, as
+  `render3d/uv_topdown/uvgen_topdown`, built for the top-down mapping. The measurement section 7
+  wanted is available; the decision it was meant to inform is still open.
+- **`Masterfade` does nothing.** `master.opacity` only scales alpha and `Render_Engine/constant1`
+  has blending off, so the alpha is discarded. Measured: identical RGB at fade 1.0 and 0.25. The
+  blackout has never dimmed the projectors. One-line fix, not yet applied, because it changes
+  what the projectors do.
+- **The canopy.** The mesh is cone A + canopy + cone B, and the unwrap runs continuously across
+  all three. Scenes may eventually want to address the canopy separately; nothing here does.
+- **`Uvset` is a fossil.** `/project1` carries `Uvset` (`fan` / `rect` / `recttrunc` / `fanpack`)
+  and `Rendermode` (`single` / `split`) as custom parameters. Nothing reads either, and the OBJs
+  section 7 specified — `Models/Teepee2_fan.obj`, `Models/Teepee2_rect.obj` — are not in the repo.
+
+---
+
+## 9A. Alternative: Resolume as the mixer (2026-10-21)
+
+A hypothetical, written down so it can be compared rather than re-argued. **Not decided.**
+Section 9 is still the plan. The Resolume subsection in 9 keeps TD as the mixer and sends Resolume
+two feeds; this goes the whole way.
+
+### The short version
+
+- **Every scene publishes its own Syphon feed**, and every scene is a clip in Resolume.
+- **Resolume owns the mix**: layers, crossfader, transitions, effects, audio reactivity on the
+  mixed image, MIDI mapping of its own parameters, and auto-pilot for unattended running.
+- **TouchDesigner becomes a scene server plus the projection pipeline**: layers, scenes, the
+  return feed, geometry, camSchnappr, the uv1 overlay.
+- **A scene cooks only while Resolume has its clip connected.** Resolume reports it; TD switches
+  cooking. This is what makes one feed per scene affordable — section 9 ruled it out without it.
+
+### The flow
+
+```
+TouchDesigner                            Resolume                       TouchDesigner
+  scene_a ── Syphon "LL_scene_a" ──┐
+  scene_b ── Syphon "LL_scene_b" ──┼── clips in layers / decks    ── Syphon ── geo1 uv0
+  scene_c ── Syphon "LL_scene_c" ──┘   mix · transitions · FX                  + uv1 overlay
+     ▲                                 audio analysis · MIDI map               cam1 / cam2
+     │                                          │
+     └──── clip connected / disconnected ◄──────┘
+           (WebSocket API, or OSC)
+```
+
+### Demand-driven cooking
+
+- Each scene gets a Syphon Spout Out named for it, `LL_<scene>`, placed **outside** the scene COMP.
+  The server then stays advertised whether or not the scene cooks, so Resolume never loses the
+  source.
+- The scene COMP defaults to `allowCooking = False`. A stopped scene costs close to nothing;
+  Syphon re-serves its last frame, which nobody sees because the clip is not connected.
+- TD learns which clips are connected and sets `allowCooking` to match. Two ways in:
+  - **Resolume's WebSocket API, via a WebSocket DAT.** Subscribe to each clip's `connected`
+    parameter by clip id. TD can find the clips by name or source, so the deck can be rearranged
+    freely. Preferred.
+  - **OSC out from Resolume, via an OSC In DAT.** Simpler, but addresses are by position
+    (`/composition/layers/N/clips/M/...`), so moving a clip in the deck silently breaks the mapping.
+- **The cooking budget is the number of connected clips**: one per Resolume layer with a clip on,
+  plus both clips during a clip transition. Section 9's two-bus bound becomes a ceiling set by
+  how many Resolume layers are in use — the operator's choice rather than the design's.
+- Treat Resolume's preview state as "cook" as well as connected. That gives a scene a head start
+  before it goes on screen (see cold start, below).
+
+### Building it out
+
+Resolume Arena / Avenue 7 has a **REST API and a WebSocket API** (Preferences → Web Server,
+port 8080 by default). Between them they can add and remove layers and columns, list available
+sources (`GET /sources`), load media or a source into a clip slot
+(`POST /composition/layers/{l}/clips/{c}/open`, with a `source:///video/<display name>` URI),
+manage effects, and subscribe to parameter changes.
+
+So the deck can be **generated, not hand-built.** A script in TD lists `Components/Scenes/`,
+opens each scene's Syphon source into a clip slot and names the clip after the scene. Rerun it
+when a scene is added. A Web Client DAT can make those calls; nothing else needs installing. The
+Resolume composition (`.avc`) is then a build product rather than something to keep in step by
+hand.
+
+A TD Syphon server appears in `GET /sources` as `TouchDesigner - <sendername>`, so a scene whose
+Syphon Out is named `LL_scene_a` opens with `source:///video/TouchDesigner%20-%20LL_scene_a`.
+Measured 2026-10-21, see below.
+
+**MCP.** Resolume ships an **official** one with Arena since 7.26:
+`/Applications/Resolume Arena/mcp/resolume_arena_mcp_server.mcpb`, a Claude Desktop extension
+that drives the same web server (load sources, effects, layers, columns, groups). It needs the web
+server enabled. Community servers also exist (`drohi-r/resolume-mcp`, `Tortillaguy/resolume-mcp`)
+but the official one comes first. Either way it is for building and designing — **never a show
+dependency.** None installed yet.
+
+### Tested 2026-10-21
+
+`Experiments/resolume-arena-test/` holds the test: `arena_test.toe` (three scenes, each with a
+Syphon Out, plus the WebSocket link) and `arena_test.avc` (the Arena composition with the three
+Syphon clips in layer 1). It ran as a **second TouchDesigner instance** with its MCP bridge on
+port **9982**, so the show file on 9981 was never touched. Arena 7.27.1.
+
+**The cooking loop works.** `arena_link` is a WebSocket DAT on `ws://127.0.0.1/api/v1`, port
+8080. On connect, Arena sends the whole composition; the callback finds every clip whose source
+names `LL_scene_<tag>`, subscribes to its `connected` parameter by id, and sets the scene COMP's
+`allowCooking` from it. `arena_state` shows the result. Measured with `out1.totalCooks`:
+
+| Arena | scene_a | scene_b | scene_c |
+|---|---|---|---|
+| Clips loaded, none connected | frozen | frozen | frozen |
+| Connect clip 1 | cooking | frozen | frozen |
+| Connect clip 2, same layer | frozen | cooking | frozen |
+| `disconnect-all` | frozen | frozen | frozen |
+
+Frozen means zero cooks across about 190 frames. With its scene off, the **Syphon Out stops
+cooking too** — it re-serves its last frame and costs nothing.
+
+**Gotchas found:**
+
+- `POST /composition/new` and `POST /composition/open` do their job but never finish the HTTP
+  reply. Always pass a timeout (`curl -m`).
+- After `/composition/new`, every clip `open` failed with "the requested clip is not found".
+  Saving and reopening the composition through `/composition/open` fixed it.
+- The Syphon sources took a little while to show up in `/sources` after TD started publishing.
+- Clip thumbnails from the REST API show a generic Syphon icon, not the picture, so the API
+  cannot confirm the image arrived. Check by eye, or route Arena's output back over Syphon.
+- The MCP bridge's port is an expression on a custom parameter. In a freshly assembled `.toe` it
+  evaluated before it was ready and bound to port 1, so the test file hardcodes 9982.
+
+**Not yet measured:** cold start (how long a scene takes to look right after connecting), and
+whether the picture arrives in Arena — checked by eye only.
+
+### Who owns what
+
+| Stays in TouchDesigner | Moves to Resolume | Goes away |
+|---|---|---|
+| Layers and their instancing inside scenes | Mixing, crossfader, layer stacking | `mixer / clock`, `mixer / choose` |
+| Scenes, one Syphon feed each | The transition library | `Components/Transitions/` |
+| The cooking switch | Effects, audio reactivity on the mix | The panel |
+| Scene-internal knobs (section 10) | MIDI mapping of Resolume's own parameters | The pool, unless rebuilt (below) |
+| Return feed, geometry, camSchnappr, uv1 | Auto-pilot | |
+
+### What it costs
+
+1. **Cold start.** A clip connects, and TD starts cooking the scene a frame or more later.
+   Feedback and particle scenes begin from empty, so there are a few stale or black frames and
+   then a visible "bloom". A fade-in transition covers the black, not the bloom. Cooking on the
+   preview state helps when someone is driving; auto-pilot does not preview.
+2. **The pool goes.** Resolume knows nothing about a layer's `Active` or a scene's availability.
+   A scene whose layer is off plays black, and auto-pilot will pick it. TD could push clip
+   bypass back over the same WebSocket, but that is the pool rebuilt across two apps.
+3. **MIDI splits.** Resolume maps the knobs for its own parameters; scene internals
+   (`tri` / `pent` / `circ` / `sq`) stay in TD. macOS lets both apps open the controller at
+   once, so that part is fine. But `Globalknobs` scoping needs to know the scene on screen, and TD
+   no longer decides that — it has to read it from Resolume.
+4. **Audio reactivity in two places.** Resolume reacts on the mixed strip; anything a TD layer
+   does with audio inside a scene stays in TD.
+5. **Unchanged from section 9's Resolume costs:** a second app in an unattended show's failure
+   path, the uv1 overlay outside the mix, two Syphon hops. And the same line not to cross —
+   mapping stays in TD.
+
+### Against section 9
+
+Gains Resolume's surface, transitions, effects library, audio analysis and MIDI learn, and drops
+most of section 9's build. Loses the availability pool, TD knowing what is on screen, and a
+single-app unattended show.
+
+If it is worth pursuing, the test is small: three scenes, the WebSocket cooking loop, and a
+measurement of cold start on the heaviest one. That answers whether demand-driven cooking holds
+up before either design is built.
+
+---
+
+## 10. MIDI and global inputs (2026-10-21)
+
+### The short version
+
+- One component owns every physical input. Everything else **references** it.
+- Knobs are named for **what they are on the controller** — `tri`, `pent`, `circ`, `sq` — not
+  for what they do. What they do is a scene's business and changes scene to scene.
+- A knob change **affects everything by default**. One master boolean, `Globalknobs`, scopes it
+  down to the scene on screen instead.
+- CC numbers appear in **one table**, nowhere else.
+- With no controller plugged in, the channels still exist and still have values. A show that
+  runs itself cannot have a missing USB device take a layer with it.
+
+### The controller
+
+A toy MIDI controller, four knobs, marked with shapes:
+
+| Channel | Knob |
+|---|---|
+| `tri` | Triangle |
+| `pent` | Pentagon |
+| `circ` | Circle |
+| `sq` | Square |
+
+Named by shape deliberately. "The circle knob" is something either of us can say out loud
+standing at the tipi; `cc74` is not. The shape is also the only thing printed on the hardware,
+so the name and the thing agree.
+
+### The component
+
+`Components/Midi/`, publishing one null CHOP at `/project1/midi/knobs` with those four channels,
+normalised 0 to 1.
+
+```
+midi_map (Table DAT)        shape  cc  chan  min  max  invert
+      │                     tri    70  1     0    1    0
+      ▼                     pent   71  1     0    1    0
+MIDI In CHOP ── rename ── fit ── default ── knobs (null)
+                                   │
+                                   └── no device connected? hold the last
+                                       known value, or the table's default
+```
+
+The table is the **only** place a CC number is written down. Re-learn the controller, or
+replace it with a different one, and the table is the whole change — nothing downstream knows
+what a CC is.
+
+`invert` is in there because toy controllers are often wired backwards and it is cheaper to fix
+in a column than to remember.
+
+### Referencing it
+
+Parameters read the null by absolute path:
+
+```
+op('/project1/midi/knobs')['circ']
+```
+
+Absolute, not relative. Relative `..` paths in *parameter* expressions resolve to `None` in ways
+that depend on context and fail silently until something reads the value — see the MCP skill
+notes. The two safe forms are an absolute path or `parent(N).op(...)`, and across components an
+absolute path is the clearer of the two.
+
+Scale at the point of use, not at the source. `knobs` publishes 0 to 1 and a parameter that wants
+0 to 5 writes `* 5`. Keeps one knob usable by two scenes wanting different ranges.
+
+### How knobs reach a scene
+
+The scene is the binding site — the same place overrides live (section 9). A scene's instance of
+`mariokart` can set
+
+```
+Audiosens   = op('/project1/midi/knobs')['circ'] * 2
+```
+
+while another scene's instance of the same layer sets
+
+```
+Huecycle    = op('/project1/midi/knobs')['circ']
+```
+
+Same knob, same layer, different job, because the binding belongs to the scene and the instances
+are separate. During a transition both respond, which is correct: you are crossfading two
+arrangements and the knob is live in both.
+
+**Scenes should declare what their knobs do.** A `Knobs` field on each scene — four short labels,
+one per shape — so the panel can show *hue · bloom · speed · trails* while that scene is on and
+*split · glitch · — · —* on the next one. Four knobs that mean something different every scene are
+unusable without that; four knobs that announce themselves are an instrument.
+
+### Knob scope: global by default, scopeable to one scene
+
+Turning a knob **affects everything** — that is the default and the normal way to work. One
+value per knob, read by every binding in every scene.
+
+One master boolean changes that:
+
+| `Globalknobs` | Turning a knob... |
+|---|---|
+| **on** (default) | changes that knob everywhere. One value, globally |
+| **off** | changes it **only in the scene currently on screen**. Every other scene keeps what it had |
+
+So the usual mode is a single value you can trust across the whole show, and when you want to
+dial in one scene without disturbing the rest, you flip one switch rather than unwiring anything.
+
+The knob value itself stays a **master constant** in the `Globalknobs` on case: global,
+persistent, never reset by a scene change, never written by anything but the hardware.
+
+**With `Globalknobs` off the knobs go relative.** Each scene stores its own value per knob, and
+the knob contributes its **movement**, not its position: turn it 0.2 and the live scene's value
+goes up by 0.2. Where the pot physically sits never matters and is never read.
+
+That removes the whole class of problem rather than managing it. There is nothing for the
+hardware and the show to disagree about, no dead zone waiting for a pickup point, and no jump —
+you turn it, it moves, immediately, in whatever scene is up.
+
+Difference the **incoming CC message**, not a sampled value. MIDI only sends on change, so an
+untouched knob produces no messages and therefore no delta — which means no drift over a long
+unattended run. Sampling a held CHOP value every frame and differencing that would work too, but
+the message-level version is exact and frame-rate independent.
+
+Two things it does cost, both worth knowing rather than fixing:
+
+- **End-stops.** A pot has ends. Run to the top while the scene value is at 0.5 and there is
+  nowhere left to turn — you have to come back down and go up again. Endless encoders do not
+  have this; toy controllers do. A gain below 1.0 on the delta makes it rarer and makes fine
+  adjustment easier at the same time.
+- **The knob means different things in the two modes** — absolute while `Globalknobs` is on,
+  relative while it is off. Defensible, because the modes have genuinely different jobs.
+
+Worth considering making it **relative in both modes**, for consistency. The only thing lost is
+"the knob position tells you the value", which stops being true the moment there are more scenes
+than knobs anyway.
+
+The split is otherwise as before:The split is otherwise as before:
+
+| Global | Per scene |
+|---|---|
+| The **value** of each knob, while `Globalknobs` is on | What the knob **does** |
+
+`circ` is one number; in one scene it drives hue drift, in the next bloom. The meaning is always
+the scene's, whatever the scope of the value.
+
+### Built as components
+
+Per S1 and S3, this is a component, not loose nodes:
+
+- **`Components/Midi/`** — owns the device, the `midi_map` table, and publishes
+  `/project1/midi/knobs`. Nothing else talks to a MIDI In CHOP.
+- **`Components/Knobs/`** — owns scope: holds `Globalknobs`, the per-scene stores, the pickup
+  logic, and publishes the *effective* knob values that bindings actually read.
+
+Bindings reference the second one, so scoping can change without touching a single scene:
+
+```
+op('/project1/knobs/out')['circ']
+```
+
+Keeping the device separate from the scoping is what lets the controller be swapped — or a
+second one added, or the knobs driven by something that is not MIDI at all — without any scene
+noticing.
+
+### Still to decide
+
+- **More than four controls.** A shift or page button doubles the knobs and halves the clarity.
+  Four that always mean what the panel says beats eight that need remembering.
+- **Where MIDI sits relative to audio reactivity.** Both modulate the same parameters. A knob
+  setting the *depth* of an audio reaction is usually better than a knob and a reaction fighting
+  over one value.

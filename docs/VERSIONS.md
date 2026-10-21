@@ -32,6 +32,7 @@ tools/td-version.sh sync
 | `Components/UVMaps/uvmap_topdown.tox` | 2025.32460 | macOS |
 | `Experiments/Light rotation/light_rotation.22.toe` | 2025.32460 | macOS |
 | `Experiments/Light rotation/light_rotation.toe` | 2025.32460 | macOS |
+| `Experiments/resolume-arena-test/arena_test.toe` | 2025.32460 | macOS |
 | `Experiments/touch-designer-mcp/NewProject.1.toe` | 2025.32460 | macOS |
 | `Experiments/touch-designer-mcp/loungellusions_mcp.toe` | 2025.32460 | macOS |
 | `Loungellusions_master.toe` | 2020.28110 | Windows |

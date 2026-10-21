@@ -19,10 +19,10 @@ This is a **play repo**, not a work repo. Treat it that way.
 
 | Where | What |
 |---|---|
-| `Loungellusions_show.toe` | **The show file.** Sources, three layers, mix, mapping, projector calibration. |
+| `Loungellusions_show.toe` | **The show file.** Sources, layers, mix, mapping, projector calibration. |
 | `Loungellusions_master.toe` | The original 2020 file. Superseded, kept for reference. |
 | `Components/` | One folder per reusable piece, each a `.tox`. See `Components/README.md`. |
-| `Components/Layers/` | The three built artworks: `mariokart`, `microscope`, `vhs`. |
+| `Components/Layers/` | The built artworks: `mariokart`, `microscope`, `vhs`, `render3d`. |
 | `Experiments/` | Scratch. One folder per experiment. No rules here on purpose. |
 | `Patches/` | Older standalone patches (pre-Components). Migrate as we touch them. |
 | `Models/` | `Teepee2_master.blend` is the source of truth for geometry and UVs; `.fbx` / `.obj` are exports. |
@@ -31,19 +31,23 @@ This is a **play repo**, not a work repo. Treat it that way.
 | `docs/` | Overview, standards, tools. Start at `docs/OVERVIEW.md`. |
 | `tools/` | Repo scripts. `td-version.sh` reads TD build numbers; `hooks/` holds the git hooks. |
 
-Media lives **outside** the repo in Google Drive (`../Loungellusions Media`).
-Reference it with relative paths from the `.toe`. Never commit media.
+Media lives **outside** the repo in OneDrive, reached by the `../Loungellusions Media`
+symlink. Reference it with relative paths from the `.toe`. Never copy it in, never commit it.
 
 ## Read before doing
 
 - `docs/OVERVIEW.md` — what the project *is*, artistically. Read before making art choices.
 - `docs/STANDARDS.md` — how we keep files tidy. Living doc; add to it when we learn.
 - `docs/TOOLS.md` — the MCP + tool kit, incl. TouchDesigner MCP and TD-Launcher.
-- `docs/PLAN.md` — build plan: tools, repo methodology, mapping, audio, video transport, show night.
+- `docs/PLAN.md` — the build plan. Status at the top; sections 7-10 are the live ones.
 - `docs/VERSIONS.md` — which TouchDesigner build each `.toe` / `.tox` needs. Generated.
 
 ## Hard rules
 
+- **Read `docs/PLAN.md` before starting anything.** Every session, before the first edit —
+  not when a question comes up. It records what was decided, what was measured, and what was
+  tried and archived. Sections 7-10 in particular. Work started without it repeats dead ends
+  that are already written down, or rebuilds something that already exists under another name.
 - **Pull from main before working.** `.toe` / `.tox` are binary — merge conflicts are fatal.
 - Never commit a `.toe` / `.tox` without saying what changed inside it. Binary diff tells nobody nothing.
 - **Every `.toe` / `.tox` has a documented TD build.** Touch a binary file, then run

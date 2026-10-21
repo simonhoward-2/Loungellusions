@@ -261,3 +261,25 @@ be able to reach another artwork by accident.
 A surface mapping is SOP + MAT, not TOP in / TOP out, so it does not fit the UVMaps shape and
 is not listed in a layer's `Mapping` menu. It lives inside the layer that owns it.
 
+## S20 — A layer is a token on disk and an instance in the scene
+
+**What:** `Components/Layers/<name>.tox` is the definition. A scene that uses a layer contains
+its own instance loaded from that file with `externaltox`. Scenes never share a layer instance.
+
+Settings true everywhere live on the layer's **token** at `/project1/layers/<name>`. A scene's
+instance inherits them as **expressions** pointing at the token, and overrides by replacing the
+expression with a value — so a parameter in expression mode is inherited, a constant one is
+overridden, and the UI says which without anyone having to remember a convention.
+
+**Why:** both mixer buses are live during a transition. Two scenes sharing one layer and wanting
+different settings has no correct answer mid-crossfade — you would see one state, and which one
+would depend on cook order.
+
+**The cost:** two scenes using the same layer cook two copies of it while they transition.
+Bounded by the two heaviest scenes, not by the size of the bank.
+
+**The trap:** a scene stores overrides against *named* parameters. Rename a parameter on a layer
+and every scene that overrode it holds a dead reference, silently. Renaming a layer parameter
+means sweeping the scenes that use it — there is no mechanism that will tell you, so it belongs
+in the commit message.
+
