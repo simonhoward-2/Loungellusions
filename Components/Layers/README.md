@@ -1,70 +1,75 @@
 # Layers
 
-One component per artwork. Each is a complete channel: a named source, the effect chain, its
-own UV remap, and its own audio reaction. The master only mixes them.
+TD build: 2025.32460
 
-| Layer | Source | Mapping | Audio | Look |
-|---|---|---|---|---|
-| `mariokart.tox` | `mario` | GLSL | `kick` | Split-screen racing, bloom on the beat, a touch of glitch |
-| `microscope.tox` | `gem` | Strip | `low` | Mirrored macro footage, hue drifting with the bass |
-| `vhs.tox` | `underworld` | Hybrid | `level` | Trails, tape-like smear |
-| `render3d.tox` | `car_trail` | Top-down | off | Blender renders of the tipi surface, landed back on the tipis |
+A layer is an **input, pre-fx**: the operators that bring a picture in, with their settings
+(file, device, URL, playback). Effects, audio reaction and UV mapping belong to the scene — see
+`Components/Scenes/README.md`.
 
-**Each layer owns its remap.** The UV mappings are instanced inside every layer as external
-toxes from `Components/UVMaps/`, behind the layer's `Mapping` menu. Only the selected one
-cooks, so the others cost nothing. That means two layers can map the same footage differently
-at the same time.
+| Layer | Inputs | Notes |
+|---|---|---|
+| `microscope.tox` | `micro` (test) · `camera` · `stream` | `input` switch picks one. The test input is the microscope sample player |
+| `vhs.tox` | `vhs` (test) · `camera` · `stream` | `input` switch picks one. The test input is the tape sample player |
+| `mariokart.tox` | `mario` | Movie file |
+| `render3d.tox` | `car_trail` | Movie file, a Blender render |
+| `cam_41.tox` | `cam_41` | RTSP `192.168.1.41:554/stream1`. Feeds `teepee_feedback` |
+| `cam_71.tox` | `cam_71` | RTSP `192.168.1.71:554/stream2`. Feeds `base1` |
 
-**Controls** are one page per effect, plus a Layer page for source, mapping, audio and opacity.
-See `Components/Layer/README.md` for the full parameter list — these three are instances of
-that component with content-specific defaults.
+**Parameters:** `Active` only. Off takes the layer out of the show; the mixer will read it.
 
-**Adding a layer:** copy the closest of the three, rename, set its `Source`, `Mapping` and
-audio defaults, wire its `out1` into `composition` at the top level, and save it here.
+## Test or live: the `input` switch
 
-The VHS layer is a placeholder look until real tape captures arrive — it's the hybrid mapping
-with trails, not a genuine VHS process.
+`microscope` and `vhs` carry three inputs into a Switch TOP named `input`:
 
-## render3d
+| `input` index | Input | Set it up on |
+|---|---|---|
+| 0 | test footage — the sample player | nothing; it finds the clips itself |
+| 1 | `camera` — Video Device In: the USB microscope, or the capture card from the VCR | its device menu |
+| 2 | `stream` — Video Stream In: RTSP / SRT / HLS | its `url` |
 
-The channel for Blender work. The animation is authored on the tipi models in
-`Models/Teepee2_master.blend`, shrinkwrapped onto the tipi surface, then rendered from a
-camera looking straight down and exported to `../Loungellusions Media/Renders/`. The
-`topdown` mapping puts it back where it came from. Scenes in their own right, and the
-transitions between the other scenes.
+Change the index on the switch itself, inside the layer. Only the selected input cooks, so an
+unplugged camera costs nothing while the test footage is on. Both default to 0.
 
-Its node in the show file is `/project1/render3d`, input 3 of `switch1` — the scene
-selector `button1` drives (`count1` now counts 0-3, not 0-2).
+## The test players
 
-### It is a surface layer (S18)
+`vhs` and `microscope` each have one, built the same way. In `layer_vhs` the nodes are `vhs_*`,
+in `layer_microscope` they are `micro_*`:
 
-This one does not hand the show an image. `surface_topdown` inside it publishes two things:
+| Node | Does |
+|---|---|
+| `*_samples` | Lists every movie in its folder, in name order: `Samples/vhs` (8 clips) or `Samples/microscope` (11) |
+| `vhs` / `micro` | Movie File In playing the current clip. Holds on the last frame |
+| `*_advance` | Steps to the next clip when the current one ends. Wraps, so it plays forever |
+| `*_advance_btn` | ADVANCE button: step on now |
+| `*_now` | Which clip is playing, e.g. `2/11  micro_dwarf.mov` |
 
-- **a mesh** on the layer's `out_geo` SOP output — the show's own 31-point mesh with a second
-  UV set written into layer 1 by a Texture SOP projecting through `cam_blender`, an
-  orthographic stand-in for the Blender render camera. Layer 0 is untouched, so the same mesh
-  still serves the image layers.
-- **a material**, `mat_surface`, a Constant MAT reading `colormapcoord uv1` with the layer's
-  full-resolution image — 1280x630 straight off `fx`, not the 1280x360 show strip.
+Drop a new clip in the folder and it joins the rotation next time `*_samples` cooks.
 
-`switch2` input 3 takes the mesh, `Render_Engine/geo1.material` takes the material, both on
-the scene index. One render pass, the same calibrated cameras, no compositing.
+The tape player came from `sources`; the microscope one is a copy of it, replacing the single
+`gem` clip, so all eleven microscope clips are in rotation. Until
+2026-10-21 the vhs layer was showing `underworld`, a microscope clip, as a placeholder; it plays
+the real tape samples now.
 
-`lvl_master` carries `Masterlevel * Masterfade` because this path never passes through
-`master`. Without it the blackout would not cover this scene.
+## In the show (S20)
 
-The `topdown` entry in the `Mapping` menu still works and still produces the strip — it is
-the fallback, and the thing to compare against. `preview_showpath` shows what the show path
-is actually wearing; `uv_topdown/preview_topdown` is the calibration view.
+Each layer sits at the master level as `/project1/layer_<name>`, in the **LAYERS** box, wired
+into every scene that uses it. Inside a scene it arrives on an In TOP named `in_<layer>`.
 
-Every effect is dry by default and `Audiosrc` is off, because a Blender render arrives
-finished: the car already leaves its own trail, so the layer's trails on top of that just
-smear it. Turn them up as a deliberate choice, not a starting point.
+Layers are **embedded**, like scenes: the show is the working copy and these `.tox` files are
+exports. They were `externaltox` while they held nothing but a Select TOP; now that camera URLs
+and devices live in them, an `externaltox` reload would throw away whatever was set in the
+show. Re-save the `.tox` after changing a layer.
 
-It was copied from `vhs`, and two things came with it:
+**Adding a layer:** copy the closest `layer_<name>` in the LAYERS box, rename it, swap its
+input for yours, and wire it into the scenes that want it.
 
-- `test_src` is the vhs sample cycler. Left in place, not wired. The layer reads `sel_src`.
-- Its `fx` chain had the trails feedback branch stuck at 1280x720 while the rest of the
-  chain followed the source, so a 2.03:1 render was refit into 16:9 and the mapping sampled
-  the wrong pixels. Every node in that chain now takes its resolution from `src` by
-  expression. Resolution does not inherit through a feedback loop — see the MCP skill notes.
+## History
+
+Before 2026-10-21 these files held whole artworks — source, `fx`, `pfx`, UV maps — and lived
+at the top of the show as `/project1/microscope` and so on. Those artworks are now the scenes.
+The old full versions are in git history if a scene ever needs to be rebuilt from one.
+
+The `vhs` artwork went missing from the show in commit 5595d00: the node was deleted and a
+copy of `microscope` (`microscope1`) landed in its slot. The scene was rebuilt from this
+folder's `vhs.tox`, which still held it. Its UV maps carried absolute OneDrive paths from an
+older machine; they are relative now.

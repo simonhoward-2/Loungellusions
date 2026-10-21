@@ -1,12 +1,12 @@
 # UVMaps
 
 Ways a flat image lands on the tipis. Each is a self-contained component with one image
-input and one output, instanced inside every layer so a layer owns its own mapping.
+input and one output, instanced inside every scene so a scene owns its own mapping.
 
 | Component | Method |
 |---|---|
 | `uvmap_ramp.tox` | **Ramp.** The UV map is built from ramp masks — the original approach that shipped with the model. Its generator is `uvgen_ramp` |
-| `uvmap_mirror.tox` | **Mirror, animated.** Same mirror method as below, plus an internal `lfo_split` CHOP that drives `crop4.cropbottom` and `crop5.croptop` — LFO 0 = classic 50/50 split, LFO 1 = no crop. Used by `vhs` |
+| `uvmap_mirror.tox` | **Mirror, animated.** Same mirror method as below, plus an internal `lfo_split` CHOP that drives `crop4.cropbottom` and `crop5.croptop` — LFO 0 = classic 50/50 split, LFO 1 = no crop. Rate, depth and centre are the `Splitrate`, `Splitdepth` and `Splitcentre` parameters on the component, so a scene can animate the mapping itself (its Mirror page drives them). Defaults 0.15 / 0.5 / 0.5 match the old fixed LFO. Used by `vhs`, `microscope`, `render3d` |
 | `uvmap_mariokart.tox` | **Mirror, static.** The original mirror method with fixed 50/50 crops. Kept separate from `uvmap_mirror.tox` so the mariokart layer can't inherit the animation. Used by `mariokart` (node renamed to `uv_mariokart` inside that layer) |
 | `uvmap_topdown.tox` | **Top-down.** For footage that is already a view of the tipis from above — Blender renders, mostly. Each point of the tipi surface samples the footage at its own footprint position. Its generator is `uvgen_topdown`. Used by `render3d` |
 

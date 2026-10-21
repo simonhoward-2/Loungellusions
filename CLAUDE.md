@@ -22,7 +22,9 @@ This is a **play repo**, not a work repo. Treat it that way.
 | `Loungellusions_show.toe` | **The show file.** Sources, layers, mix, mapping, projector calibration. |
 | `Loungellusions_master.toe` | The original 2020 file. Superseded, kept for reference. |
 | `Components/` | One folder per reusable piece, each a `.tox`. See `Components/README.md`. |
-| `Components/Layers/` | The built artworks: `mariokart`, `microscope`, `vhs`, `render3d`. |
+| `Components/Layers/` | Inputs, pre-fx, each holding its own files / cameras / streams. `vhs` and `microscope` switch test or live. |
+| `Components/Scenes/` | The built artworks: layers through effects, audio and UV mapping. |
+| `Components/Midi/` | The MIDI controller. Four global knob values; each scene wires the ones it wants by hand. |
 | `Experiments/` | Scratch. One folder per experiment. No rules here on purpose. |
 | `Patches/` | Older standalone patches (pre-Components). Migrate as we touch them. |
 | `Models/` | `Teepee2_master.blend` is the source of truth for geometry and UVs; `.fbx` / `.obj` are exports. |

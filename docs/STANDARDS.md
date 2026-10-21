@@ -150,15 +150,19 @@ no size problem worth solving.
 **Known cosmetic wart:** `project.name` keeps climbing (`.1`, `.2`, ...) because TouchDesigner
 only re-reads it when a file is opened. Harmless — the stable file on disk is always correct.
 
-## S13 — A layer owns its mapping
+## S13 — A scene owns its mapping
 
-**What:** Each layer in `Components/Layers/` carries its own UV mapping components and chooses
-between them with its `Mapping` parameter. The master never decides how content lands on the
-tipis.
+**What:** Each scene in `Components/Scenes/` carries its own UV mapping components and chooses
+between them with its `Mapping` parameter, after its effects. Layers carry no mapping and no
+effects. The master never decides how content lands on the tipis.
 
-**Why:** Two layers can then map the same footage differently at the same time, and a layer
-stays a complete artwork you can drop into any show file. Only the selected mapping cooks, so
-the unused one costs nothing.
+**Why:** Two scenes can then map the same source differently at the same time, effects are
+applied in the flat image before it is bent onto the cones, and a scene can animate its own
+mapping (the mirror split) without that reaching any other scene. Only the selected mapping
+cooks, so the unused one costs nothing.
+
+*Until 2026-10-21 this read "a layer owns its mapping". Layers became pre-fx sources and the
+mapping moved up with the effects.*
 
 ## S14 — Name operators for what they do
 
@@ -181,6 +185,22 @@ invisible on the canvas, so they have to be written down where they'd otherwise 
 **Gotcha:** annotate boxes carry the nodes inside them. Deleting or resizing a box can drag
 its contents — three nodes drifted that way, one by 375 pixels. Re-check positions after
 editing boxes.
+
+**Leave room for the text.** A box's title and body sit at its top, and a node placed there
+covers them. Keep the band above the topmost node clear, and size it from the text, not by eye:
+
+```
+header = 30 (title) + lines × 20 + 30 (margin)
+lines  ≈ characters × 7.5 / (box width − 20)      # body font 14, word-wrapped
+```
+
+So a 250-wide box with a 100-character body needs about 140 px above its first node. Short body
+text and wider boxes both shrink it. The numbers are an estimate: check by eye in the network
+editor after placing, and grow the box upward if the text is still covered.
+
+**Leave room to grow.** Where a column of nodes is a list that will get longer — layers,
+scenes — space the rows well apart (400 px in the LAYERS and SCENES boxes) so a new one drops
+in between two existing ones without shuffling everything else.
 
 ## S16 — Geometry comes from OBJ, not FBX
 
@@ -215,18 +235,18 @@ tile answers it without opening the node.
 **Apply:** When creating a CHOP over MCP, `chop.viewer = True` in the same script. When
 touching an existing CHOP whose tile is blank, flip it.
 
-## S18 — Two kinds of layer: image and surface
+## S18 — Two kinds of scene: image and surface
 
-**What:** A layer delivers its content to the show in one of two ways, and says which in its
-README row.
+**What:** A scene delivers its content to the show in one of two ways, and says which in its
+README row. (Written when layers held the mapping; since 2026-10-21 the scene does.)
 
-- An **image layer** remaps its content into the model's UV layer 0 and hands over one TOP.
+- An **image scene** remaps its content into the model's UV layer 0 and hands over one TOP.
   It flows `switch1` → `composition` → `master` → `show_tex` → `Render_Engine/geo1`, wearing
-  `constant1`. Ramp and mirror mappings work this way. Three of the four layers are this.
-- A **surface layer** hands over a *mesh and a material* instead. It writes its own unwrap
+  `constant1`. Ramp and mirror mappings work this way. Three of the four scenes are this.
+- A **surface scene** hands over a *mesh and a material* instead. It writes its own unwrap
   into **UV layer 1** of the show mesh, publishes that mesh on a SOP output, and supplies the
   material to wear with it. `switch2` picks the mesh on the scene index, `geo1.material`
-  picks the material on the same index. `render3d` is the only one so far.
+  picks the material on the same index. The `render3d` scene is the only one so far.
 
 Both go through the same `geo1` and the same calibrated cameras, so there is one render pass
 either way and projector calibration is untouched.
@@ -234,16 +254,16 @@ either way and projector calibration is untouched.
 **Why:** The show strip is 1280x360 and the model UVs occupy v 0.041–0.360 of it — about
 1280x115 pixels for both tipis, against a cone whose slant is 85 world units. Content that is
 already in the tipis' own space, like a Blender render, loses most of itself going through
-that bottleneck. A surface layer skips it and samples the source at full resolution.
+that bottleneck. A surface scene skips it and samples the source at full resolution.
 
 **Two traps, both load-bearing:**
 
 - `switch2`'s inputs are **sequential** while its index is the **scene number**. It used to
   have two inputs and survive scenes 2 and 3 by clamping. Adding a mesh at the end means
-  every scene below it needs a real input or it will grab the wrong mesh. Four scenes, four
-  inputs.
+  every scene below it needs a real input or it will grab the wrong mesh. Six scenes, six
+  inputs (2026-10-21).
 - A surface layer **never passes through `master`**, so `Masterlevel` and `Masterfade` do not
-  reach it. `render3d/surface_topdown/lvl_master` re-applies both by expression. Any future
+  reach it. `scene_render3d/surface_topdown/lvl_master` re-applies both by expression. Any future
   surface layer needs the same node or the blackout will not cover it.
 
 ## S19 — UV components are templates; a layer that diverges branches
@@ -261,25 +281,33 @@ be able to reach another artwork by accident.
 A surface mapping is SOP + MAT, not TOP in / TOP out, so it does not fit the UVMaps shape and
 is not listed in a layer's `Mapping` menu. It lives inside the layer that owns it.
 
-## S20 — A layer is a token on disk and an instance in the scene
+## S20 — A layer is wired into its scenes, at the master level
 
-**What:** `Components/Layers/<name>.tox` is the definition. A scene that uses a layer contains
-its own instance loaded from that file with `externaltox`. Scenes never share a layer instance.
+**What:** Every layer and every scene sits at the top of the show, `/project1/layer_<name>` and
+`/project1/scene_<name>`, in their own annotated boxes. A layer's output is **wired** into the
+input of each scene that uses it; inside the scene an In TOP named `in_<layer>` picks it up. One
+layer can feed several scenes.
 
-Settings true everywhere live on the layer's **token** at `/project1/layers/<name>`. A scene's
-instance inherits them as **expressions** pointing at the token, and overrides by replacing the
-expression with a value — so a parameter in expression mode is inherited, a constant one is
-overridden, and the UI says which without anyone having to remember a convention.
+A layer holds its own inputs and their settings — files, devices, stream URLs. Layers and
+scenes are both **embedded** in the show; the `.tox` files in `Components/` are exports.
 
-**Why:** both mixer buses are live during a transition. Two scenes sharing one layer and wanting
-different settings has no correct answer mid-crossfade — you would see one state, and which one
-would depend on cook order.
+**Why:** the wiring is the documentation — open `/project1` and you can see which source feeds
+which look. Sharing is safe because a layer is pre-fx: it has no settings a scene would want
+different. A scene that wants a different input wires a different layer.
 
-**The cost:** two scenes using the same layer cook two copies of it while they transition.
-Bounded by the two heaviest scenes, not by the size of the bank.
+*Superseded design (2026-10-19 to 10-21): each scene held its own instance of the layer, with
+parameters inherited from a token by expression. That existed to keep per-layer effect settings
+apart during a crossfade; once effects moved to the scene there was nothing left to keep apart,
+and the instances hid the wiring.*
 
-**The trap:** a scene stores overrides against *named* parameters. Rename a parameter on a layer
-and every scene that overrode it holds a dead reference, silently. Renaming a layer parameter
-means sweeping the scenes that use it — there is no mechanism that will tell you, so it belongs
-in the commit message.
+## S21 — Knob values are global; each scene picks them off by hand
 
+**What:** The four knob values live in one place, `/project1/midi/knobs`. Every scene brings them
+in the same way — a `midi` Select CHOP and a `knobs` null at the top of the scene network, with
+`audio` / `analysis` beside them for the audio bus — and
+then wires whichever knob it wants into whichever effect it wants: a Select CHOP, an Export, or
+an expression. CC numbers stay in `midi_map` only.
+
+**Why:** the knob means something different in each look, and the simplest record of what it
+does is the wire or expression itself. A binding table on top of that was tried (2026-10-21) and
+dropped the same evening as more machinery than the job needs.

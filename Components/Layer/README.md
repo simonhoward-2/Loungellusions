@@ -5,6 +5,10 @@ TD build: 2025.32460
 One channel of the show: a named source, through effects, through its own UV mapping, out to
 the mix. Three exist in the master (`layer1`, `layer2`, `layer3`); more are copies.
 
+> **2026-10-21:** this shape is now the inside of a **scene**, minus the source. Layers became
+> source-only; see `Components/Scenes/README.md`. The parameter reference below still applies to
+> a scene's effect pages.
+
 **Looks like:** whatever its source is, wearing whatever effect and mapping it's set to.
 
 **Needs:** `/project1/sources` for the source names, and the three `.tox` files in

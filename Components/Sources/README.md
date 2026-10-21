@@ -2,28 +2,21 @@
 
 TD build: 2025.32460
 
-Every input the show can draw on, named for what it is. Self-contained — the media nodes
-live inside this component now, not scattered across the top level.
-
-**Looks like:** nothing on its own. It's the shelf, not the artwork.
-
-**Needs:** the media folder as a sibling of the repo (`../Loungellusions Media`, a symlink
-into OneDrive). `Samples/` is footage we found; `Renders/` is footage we made in Blender.
+**Parked inputs.** Since 2026-10-21 each layer holds its own inputs (`Components/Layers/`), so
+nothing in the show reads this component. What is left is footage and inputs no layer uses yet,
+kept so they are a copy-paste away:
 
 | Name | What |
 |---|---|
-| `mario` | `Samples/n64/mario_1.mov` |
-| `skull` | `Samples/microscope/micro_skull.mov` |
-| `gem` | `Samples/microscope/micro_gem.mov` |
-| `underworld` | `Samples/microscope/micro_underworld.mov` |
-| `scroll` | `Samples/microscope/micro_assorted_scroll.mov` |
-| `car_trail` | `Renders/car-trail-flat.mp4` — a Blender render, not a sample. Top-down unwrap, 2048x1008, 24fps, 250 frames. Pair it with the `topdown` mapping |
 | `generative` | Output of the nested `demo` component — animated ramps, no file |
 | `syphon1`–`syphon6` | Live Syphon inputs. Black until something publishes |
+| `moviefilein1` → `kscope_null` | A clip on Tom's Windows machine (`C:/Users/tomha/Downloads/IMG_1908.MOV`). Missing on the Mac |
 
-Sources are **raw**. The mirror, hue-shift and feedback treatments that used to hang off
-individual sources now live in the shared FX component instead, so any source can have any
-of them. See `Components/FXTest/README.md`.
+To use one: copy it into a layer (or into a new `layer_<name>`) and wire it to `out1`.
 
-Layers pick a source by name, building the path `/project1/sources/<name>`. Renaming an
-entry breaks any layer pointing at it — add names rather than renaming.
+Moved out on 2026-10-21: every microscope clip (`gem`, `skull`, `underworld`, `scroll`) → the
+microscope test player in `layer_microscope`, `mario` → `layer_mariokart`, `car_trail`
+→ `layer_render3d`, `cam_41` / `cam_71` → their camera layers, and the whole vhs sample player
+→ `layer_vhs`.
+
+Media paths are relative to the `.toe` (`../Loungellusions Media/...`, a symlink into OneDrive).

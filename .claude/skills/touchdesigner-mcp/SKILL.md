@@ -124,6 +124,19 @@ worth a fresh look each time. Two reliable alternatives:
 
 Prefer `parent(N).op(...)` for portability inside toxes.
 
+### Panels: look at them, and watch for fill-mode siblings
+
+A panel change is not done until it has been seen. Render it with a temporary OP Viewer TOP
+(`opviewerTOP`, `opviewer` = the panel COMP, custom resolution = the panel size), read it with
+`get_top_image`, then delete the TOP. Two traps found that way, both invisible from the
+parameters alone:
+
+- A sibling with `hmode` / `vmode` = `fill` grows to cover anything added beside it when the
+  panel is widened. `control_panel/master_pars` hid four new sliders until pinned to `fixed`.
+- `parent.create(sliderCOMP, 'knob_tri')` lands as `knob_tri1` (the default-widget clone
+  renames it) — rename after creating. Its `text` child is fixed at 400x300, so a small slider
+  shows no label; set the text's `w` / `h` to `parent().width` / `parent().height`.
+
 ### Sparse noise costs about six times what perlin does
 
 The Noise TOP's `sparse` type is in a different price bracket from the rest. Measured on the

@@ -17,10 +17,10 @@ real hours; 9 and 10 are the current design.
 | Tools installed | **Done.** Section 6 |
 | Per-tipi texturing / unwrap | **One unwrap complete.** Section 7. Resolution work still parked |
 | 3D pipeline | **In progress.** The current work — Blender renders landed on the tipis |
-| Layers, scenes, mixer | **Designed, not built.** Section 9 |
+| Layers, scenes, mixer | **Layers and scenes built 2026-10-21; mixer not.** Section 9 |
 | Resolume as the mixer | **Alternative, not chosen.** Section 9A — every scene a clip, cooked on demand |
-| Audio reactivity | **Planned.** Analysis is built and wired; using it per scene is still to come |
-| MIDI input | **Designed, not built.** Section 10 — four knobs, one component, referenced everywhere |
+| Audio reactivity | **Wired per scene.** The analysis comes in at the top of every scene; `vhs` breathes its mirror split and warps on the kick |
+| MIDI input | **Built, controller not yet learnt.** Section 10 — four 0/1 knobs, global values, each scene binds them its own way |
 | Hand tracking | **Not now.** Parked deliberately, not forgotten |
 
 Sections 1-8 are history and reference. Sections 9 and 10 are what we are building.
@@ -385,10 +385,13 @@ two failures we measured.
 
 ### The short version
 
-- A **layer** is a channel — source, effects, audio, its own mapping. General control; a layer
-  is something you tune once and it affects everything that uses it. It has an `Active` toggle.
-- A **scene** is a `.tox` that arranges some layers with nodes. It names the layers it needs in
-  one space-separated field. It has **no length and no transition** — those are the mixer's.
+- A **layer** is a source, **pre-fx**. General control; a layer is something you set once and
+  it affects everything that uses it. It holds its own inputs (files, cameras, streams) and an
+  `Active` toggle, and nothing else.
+- A **scene** is a `.tox` that arranges some layers with nodes **and owns the effects, the audio
+  reaction and the UV mapping** — including effects on the mapping itself, like the mirror
+  split. It names the layers it needs in one space-separated field. It has **no length and no
+  transition** — those are the mixer's.
 - A scene is **available** when every layer it names is Active. Derived, never stored. Switch a
   layer off and the scenes needing it drop out of rotation on their own.
 - The **mixer** owns the show: it finds the available scenes, decides how long each runs, picks
@@ -447,16 +450,42 @@ switch over all of them.
 
 ---
 
+### Built 2026-10-21
+
+What exists now, in `Loungellusions_show.toe`:
+
+| Where | What |
+|---|---|
+| `/project1/layer_<name>` | `microscope`, `mariokart`, `vhs`, `render3d`, `cam_41`, `cam_71`. Each holds its own inputs and their settings; `vhs` and `microscope` switch test / camera / stream. `Active` only. Embedded, exported to `Components/Layers/`. **LAYERS** box |
+| `/project1/scene_<name>` | One scene per old layer. `in_<layer>` → `fx` → `pfx` → UV maps → `out1`. Embedded; exported to `Components/Scenes/`. **SCENES** box, wired straight into `switch1` / `switch2` |
+| `/project1/midi`, `/project1/knobs` | Section 10 |
+
+The scenes are the old layer artworks with the source cut out and replaced by an input from the layer,
+so every look is unchanged — measured, mean RGB matches the old layer output. `switch1` now
+runs base1, teepee_feedback, microscope, render3d, mariokart, vhs on the `button1` counter
+(0–5) as a stand-in for the mixer; `Components/Scenes/README.md` has the table.
+
+`vhs` had gone missing from the show (deleted in 5595d00, a `microscope1` copy in its slot). It
+is back as a scene, rebuilt from `Components/Layers/vhs.tox`. `mariokart` had fallen out of
+`switch1` when the camera inputs went in; it is back at index 4.
+
+**Scenes are embedded, not `externaltox`.** Same as the layers were. The show is the working
+copy and `Components/Scenes/*.tox` are exports — re-save the tox after changing a scene. If two
+of us ever edit scenes in the same week, this is the thing to change first.
+
+Not built yet: `Active` does nothing until the mixer reads it, and nothing sets
+`allowCooking`. Both are the mixer's job.
+
 ### Layers
 
-Live in `Components/Layers/`, one `.tox` each, as now. Two additions:
+Live in `Components/Layers/`, one `.tox` each. A layer is a source and nothing more:
 
-- **`Active`** toggle on the layer COMP. Off means the layer is out of the show.
+- **`Active`** toggle. Off means the layer is out of the show.
 - When off, the mixer sets `.allowCooking = False` on it, so an inactive layer costs nothing.
   This is the real lever — a bypassed-but-cooking layer still burns GPU.
+- **Its own inputs**, with their settings. `/project1/sources` is parked; nothing reads it.
 
-Nothing else about layers changes. They keep owning their source, effects, audio and mapping
-(S13), and the `Mapping` menu still chooses how their image lands.
+Effects, audio and mapping are the scene's (S13).
 
 ### Scenes
 
@@ -486,45 +515,18 @@ rotation is invisible until the night.
 
 ### How layers wire into scenes
 
-A layer is a **token on disk and an instance in the scene**. The `.tox` in `Components/Layers/`
-is the definition; a scene that names a layer contains its own instance of it, loaded from that
-file with `externaltox`. Scenes do not share a layer — they each get one.
+**Revised 2026-10-21: layers are wired, not instanced (S20).** Layer and scene COMPs both sit at
+the top of the show in their own boxes; a layer's output is wired into each scene that uses it,
+and one layer can feed several scenes.
 
-That sounds wasteful until you look at a transition. **Both buses are live at once.** If two
-scenes both used one shared `microscope` and wanted different settings, there would be no right
-answer during the crossfade — you would see one state, not two, and which one would depend on
-cook order. Instancing removes the question. It is the same reason the uvmap components are
-instanced inside each layer rather than shared (S13), one level up.
+The first version of this section gave every scene its own instance of each layer, inheriting
+parameters from a token by expression, so two scenes could hold different settings for one layer
+through a crossfade. That mattered while layers carried effects. Now a layer is only a source,
+so there is nothing for two scenes to disagree about — and instancing hid the wiring inside the
+scenes, which is the thing you most want to see. A scene that wants a different source wires a
+different layer; everything else it wants different is already its own.
 
-**Where a parameter lives decides how far it reaches:**
-
-| Level | Holds | Changing it affects |
-|---|---|---|
-| **Token** — `/project1/layers/<name>` | `Active`, plus the settings you want true everywhere: default source, base levels, house look | Every scene using that layer |
-| **Instance** — inside a scene | Whatever this scene wants different | That scene only |
-
-An instance parameter inherits by **expression** pointing at the token:
-
-```
-op('/project1/layers/microscope').par.Audiosens
-```
-
-and is overridden by replacing that expression with a value. This is worth doing exactly this
-way rather than with a copy-on-create: a parameter in expression mode is inherited and a
-constant one is overridden, so **the UI already tells you which is which** without a convention
-to remember. Reset an override by putting the expression back.
-
-So: Mario Kart can be audio-reactive in one scene and still in another; the same layer can take
-its hue from a knob here and its bloom from the same knob there. Nothing is copied, nothing is
-shared, and the two can run at once through a crossfade without arguing.
-
-**The cost, honestly:** two scenes using the same layer means two copies of that layer cooking
-while they transition. That is the cost the two-bus design already pays, so it is bounded by the
-two heaviest scenes rather than by the size of the bank.
-
-**The thing that will bite:** a scene stores overrides against *named* parameters. Rename a
-parameter on a layer and every scene that overrode it is carrying a dead reference. There is no
-way around that except knowing it — see S20.
+The cost goes down too: a layer feeding two scenes during a transition cooks once.
 
 ### Availability
 
@@ -829,8 +831,14 @@ cooking too** — it re-serves its last frame and costs nothing.
 - The MCP bridge's port is an expression on a custom parameter. In a freshly assembled `.toe` it
   evaluated before it was ready and bound to port 1, so the test file hardcodes 9982.
 
-**Not yet measured:** cold start (how long a scene takes to look right after connecting), and
-whether the picture arrives in Arena — checked by eye only.
+- A Syphon clip comes in at its own size. The 1280x720 scenes sat small inside Arena's default
+  1920x1080 composition. Match the composition to the scene size, or set the clip to fill.
+
+**The picture arrives.** Checked by eye: scene A showed live in Arena's Composition Monitor, its
+frame counter running.
+
+**Not yet measured:** cold start, meaning how long a scene takes to look right after its clip
+connects.
 
 ### Who owns what
 
@@ -878,10 +886,11 @@ up before either design is built.
 ### The short version
 
 - One component owns every physical input. Everything else **references** it.
-- Knobs are named for **what they are on the controller** — `tri`, `pent`, `circ`, `sq` — not
-  for what they do. What they do is a scene's business and changes scene to scene.
-- A knob change **affects everything by default**. One master boolean, `Globalknobs`, scopes it
-  down to the scene on screen instead.
+- Knobs are named for **what they are on the controller** — `tri`, `pent`, `circ`, `sq`. They
+  read **0 or 1 only**.
+- The knob **values** are global: one value per knob, the same in every scene.
+- What a knob **does** is each scene's choice, wired by hand from a `knobs` CHOP at the top of
+  every scene. Scoping a value to the scene on screen (`Globalknobs` off) waits for the mixer.
 - CC numbers appear in **one table**, nowhere else.
 - With no controller plugged in, the channels still exist and still have values. A show that
   runs itself cannot have a missing USB device take a layer with it.
@@ -901,139 +910,62 @@ Named by shape deliberately. "The circle knob" is something either of us can say
 standing at the tipi; `cc74` is not. The shape is also the only thing printed on the hardware,
 so the name and the thing agree.
 
+### Revised 2026-10-21, and built
+
+Two things changed once the real controller was in hand, and they simplify everything below:
+
+- **The knobs read 0 or 1 only.** They are switches, not faders. So there is no position to
+  pick up, no delta to take, and no relative mode — the whole of the old "go relative when
+  scoped" design is gone.
+- **The value is global, the job is the scene's.** One `circ` value for the whole show, read
+  by every scene; what `circ` does is wired by hand in each scene (S21).
+  (A first build on 2026-10-21 made the job global too — one effect per knob show-wide. Wrong
+  call, reverted the same evening.)
+
 ### The component
 
-`Components/Midi/`, publishing one null CHOP at `/project1/midi/knobs` with those four channels,
-normalised 0 to 1.
+`Components/Midi/`, at `/project1/midi`, publishing `/project1/midi/knobs` with the four shape
+channels, always present, 0 or 1.
 
 ```
-midi_map (Table DAT)        shape  cc  chan  min  max  invert
-      │                     tri    70  1     0    1    0
-      ▼                     pent   71  1     0    1    0
-MIDI In CHOP ── rename ── fit ── default ── knobs (null)
-                                   │
-                                   └── no device connected? hold the last
-                                       known value, or the table's default
+midi_map (Table DAT)        shape  cc  chan  invert  snap  default
+      │                     tri    70  1     0       1     0
+      ▼                     ...
+midi_in (MIDI In CHOP) ── read_knobs (Script CHOP) ── knobs (null)
 ```
 
-The table is the **only** place a CC number is written down. Re-learn the controller, or
-replace it with a different one, and the table is the whole change — nothing downstream knows
-what a CC is.
+The four knobs are also on screen: sliders in `/project1/control_panel`, merged into the same
+channels. Whichever was moved last wins, hardware or screen.
 
-`invert` is in there because toy controllers are often wired backwards and it is cheaper to fix
-in a column than to remember.
+The table is the **only** place a CC number is written down. `snap` 1 rounds a knob to 0 or 1,
+`default` is the value with nothing plugged in. CC 70–73 are placeholders until the controller
+is learnt, and the device has to be mapped as id 1 in Dialogs → MIDI Device Mapper on each
+machine.
 
-### Referencing it
+### What each knob does: per scene, by hand
 
-Parameters read the null by absolute path:
+The knob values are global (`/project1/midi/knobs`). What they do is chosen by hand, per
+scene. Every scene has the same two CHOPs **at the top of its network**:
 
-```
-op('/project1/midi/knobs')['circ']
-```
-
-Absolute, not relative. Relative `..` paths in *parameter* expressions resolve to `None` in ways
-that depend on context and fail silently until something reads the value — see the MCP skill
-notes. The two safe forms are an absolute path or `parent(N).op(...)`, and across components an
-absolute path is the clearer of the two.
-
-Scale at the point of use, not at the source. `knobs` publishes 0 to 1 and a parameter that wants
-0 to 5 writes `* 5`. Keeps one knob usable by two scenes wanting different ranges.
-
-### How knobs reach a scene
-
-The scene is the binding site — the same place overrides live (section 9). A scene's instance of
-`mariokart` can set
-
-```
-Audiosens   = op('/project1/midi/knobs')['circ'] * 2
-```
-
-while another scene's instance of the same layer sets
-
-```
-Huecycle    = op('/project1/midi/knobs')['circ']
-```
-
-Same knob, same layer, different job, because the binding belongs to the scene and the instances
-are separate. During a transition both respond, which is correct: you are crossfading two
-arrangements and the knob is live in both.
-
-**Scenes should declare what their knobs do.** A `Knobs` field on each scene — four short labels,
-one per shape — so the panel can show *hue · bloom · speed · trails* while that scene is on and
-*split · glitch · — · —* on the next one. Four knobs that mean something different every scene are
-unusable without that; four knobs that announce themselves are an instrument.
-
-### Knob scope: global by default, scopeable to one scene
-
-Turning a knob **affects everything** — that is the default and the normal way to work. One
-value per knob, read by every binding in every scene.
-
-One master boolean changes that:
-
-| `Globalknobs` | Turning a knob... |
+| Node | Does |
 |---|---|
-| **on** (default) | changes that knob everywhere. One value, globally |
-| **off** | changes it **only in the scene currently on screen**. Every other scene keeps what it had |
+| `midi` | Select CHOP of `/project1/midi/knobs` |
+| `knobs` | Null. `tri`, `pent`, `circ`, `sq`, 0 or 1 |
 
-So the usual mode is a single value you can trust across the whole show, and when you want to
-dial in one scene without disturbing the rest, you flip one switch rather than unwiring anything.
+Pick off the knob you want where you want it: a Select CHOP on `knobs` into an effect, an
+Export, or an expression such as `parent().op('knobs')['circ']` on a scene parameter. Nothing
+is bound by default — every scene's look is exactly its own parameters until you wire a knob in.
 
-The knob value itself stays a **master constant** in the `Globalknobs` on case: global,
-persistent, never reset by a scene change, never written by anything but the hardware.
+A `knob_map` table with a binding script was built first (2026-10-21) and removed the same
+evening: it worked, but a table that writes expressions is more to understand than the
+expressions themselves. No scene has knobs wired yet.
 
-**With `Globalknobs` off the knobs go relative.** Each scene stores its own value per knob, and
-the knob contributes its **movement**, not its position: turn it 0.2 and the live scene's value
-goes up by 0.2. Where the pot physically sits never matters and is never read.
+### Scoping to one scene — not built
 
-That removes the whole class of problem rather than managing it. There is nothing for the
-hardware and the show to disagree about, no dead zone waiting for a pickup point, and no jump —
-you turn it, it moves, immediately, in whatever scene is up.
-
-Difference the **incoming CC message**, not a sampled value. MIDI only sends on change, so an
-untouched knob produces no messages and therefore no delta — which means no drift over a long
-unattended run. Sampling a held CHOP value every frame and differencing that would work too, but
-the message-level version is exact and frame-rate independent.
-
-Two things it does cost, both worth knowing rather than fixing:
-
-- **End-stops.** A pot has ends. Run to the top while the scene value is at 0.5 and there is
-  nowhere left to turn — you have to come back down and go up again. Endless encoders do not
-  have this; toy controllers do. A gain below 1.0 on the delta makes it rarer and makes fine
-  adjustment easier at the same time.
-- **The knob means different things in the two modes** — absolute while `Globalknobs` is on,
-  relative while it is off. Defensible, because the modes have genuinely different jobs.
-
-Worth considering making it **relative in both modes**, for consistency. The only thing lost is
-"the knob position tells you the value", which stops being true the moment there are more scenes
-than knobs anyway.
-
-The split is otherwise as before:The split is otherwise as before:
-
-| Global | Per scene |
-|---|---|
-| The **value** of each knob, while `Globalknobs` is on | What the knob **does** |
-
-`circ` is one number; in one scene it drives hue drift, in the next bloom. The meaning is always
-the scene's, whatever the scope of the value.
-
-### Built as components
-
-Per S1 and S3, this is a component, not loose nodes:
-
-- **`Components/Midi/`** — owns the device, the `midi_map` table, and publishes
-  `/project1/midi/knobs`. Nothing else talks to a MIDI In CHOP.
-- **`Components/Knobs/`** — owns scope: holds `Globalknobs`, the per-scene stores, the pickup
-  logic, and publishes the *effective* knob values that bindings actually read.
-
-Bindings reference the second one, so scoping can change without touching a single scene:
-
-```
-op('/project1/knobs/out')['circ']
-```
-
-Keeping the device separate from the scoping is what lets the controller be swapped — or a
-second one added, or the knobs driven by something that is not MIDI at all — without any scene
-noticing.
+`Globalknobs` off ("this knob only touches the scene on screen") stays in the design but is not
+built: it needs the mixer to say which scene is on screen. With 0/1 knobs it would be a gate —
+the knob reaches only the live scene — rather than the relative-delta scheme this section used
+to describe.
 
 ### Still to decide
 
