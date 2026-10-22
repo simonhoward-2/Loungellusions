@@ -17,7 +17,7 @@ real hours; 9 and 10 are the current design.
 | Tools installed | **Done.** Section 6 |
 | Per-tipi texturing / unwrap | **One unwrap complete.** Section 7. Resolution work still parked |
 | 3D pipeline | **In progress.** The current work — Blender renders landed on the tipis |
-| Layers, scenes, mixer | **Layers and scenes built 2026-10-21; mixer proof of concept 2026-10-22.** Section 9 — two buses, pool, clock, `fade_black` and `cross`. No panel yet |
+| Layers, scenes, mixer | **Layers and scenes built 2026-10-21; mixer proof of concept 2026-10-22.** Section 9 — two buses, pool, clock, `fade_black` and `cross`, and a display-only monitor |
 | Resolume as the mixer | **Alternative, not chosen.** Section 9A — every scene a clip, cooked on demand |
 | Audio reactivity | **Wired per scene.** The analysis comes in at the top of every scene; `vhs` breathes its mirror split and warps on the kick |
 | MIDI input | **Built, controller not yet learnt.** Section 10 — four 0/1 knobs, global values, each scene binds them its own way |
@@ -491,7 +491,8 @@ the panel and whatever the mixer grows next. `Components/Mixer/README.md` has th
 | Chooser | `randomness` 0 walks the pool in order, 1 picks weighted by `Weight`, never the scene on air |
 | Transitions | `tr_fade_black` and `tr_cross`, to the contract below, picked by `ctrl` `transition`. Exported to `Components/Transitions/` |
 | By hand | `btn_auto`, `btn_pause`, `btn_next`, `fader` — nodes in the mixer network, not parameters |
-| Readouts | `readout` DAT: now, next, time left, transition, progress, last. For the panel, when it exists |
+| Readouts | `readout` DAT: now, next, time left, transition, progress, last |
+| Monitor | `mixer/monitor`, shown on the main network as `mixer_monitor`: now and next with thumbnails, clock and transition bars, the output, a two-minute history of both buses, and the pool coloured by state. Display only |
 
 `switch2` and `geo1.material` read `mixer/state` `scene` instead of the `button1` counter.
 `switch1` / `button1` are still wired to the scenes but feed nothing — a fallback while this is
@@ -737,6 +738,8 @@ mixer's scene channel instead.
 
 `blend_mix` is worth reading before deleting — it is a built blender wired to nothing, with a
 feature-versus-microscope switch and three composite modes. It is the ancestor of this section.
+*Done 2026-10-22: it became `scene_blend` (vhs + microscope, mixer input 6) and the original is
+gone.*
 
 ### Open questions this does not settle
 

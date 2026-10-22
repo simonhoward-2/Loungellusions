@@ -29,6 +29,7 @@ tools/td-version.sh sync
 | `Components/Midi/midi.tox` | 2025.32460 | macOS |
 | `Components/Mixer/mixer.tox` | 2025.32460 | macOS |
 | `Components/PaletteFX/palettefx.tox` | 2025.32460 | macOS |
+| `Components/Scenes/blend.tox` | 2025.32460 | macOS |
 | `Components/Scenes/mariokart.tox` | 2025.32460 | macOS |
 | `Components/Scenes/microscope.tox` | 2025.32460 | macOS |
 | `Components/Scenes/render3d.tox` | 2025.32460 | macOS |

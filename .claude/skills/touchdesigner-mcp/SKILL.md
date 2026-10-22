@@ -134,8 +134,15 @@ parameters alone:
 - A sibling with `hmode` / `vmode` = `fill` grows to cover anything added beside it when the
   panel is widened. `control_panel/master_pars` hid four new sliders until pinned to `fixed`.
 - `parent.create(sliderCOMP, 'knob_tri')` lands as `knob_tri1` (the default-widget clone
-  renames it) — rename after creating. Its `text` child is fixed at 400x300, so a small slider
+  renames it) — rename after creating. `annotateCOMP` ignores the name entirely and lands as
+  `annotateN`; set `.name` after creating and check it. Its `text` child is fixed at 400x300, so a small slider
   shows no label; set the text's `w` / `h` to `parent().width` / `parent().height`.
+
+### A COMP's inputs follow its In OPs' names, not their positions
+
+`in_microscope` is input 0 and `in_vhs` input 1, wherever they sit in the network — the order is
+alphabetical. Wire by name: `comp.inputConnectors[i].inOP.name` tells you which In OP a connector
+feeds. Numbered names (`in_0`, `in_1`) keep position and order the same.
 
 ### Sparse noise costs about six times what perlin does
 

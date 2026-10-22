@@ -13,6 +13,7 @@ and a plain ramp in another.
 | `mariokart.tox` | `mariokart` | Mirror, static (`uv_mariokart`) | `kick` | Split-screen racing, bloom on the beat |
 | `vhs.tox` | `vhs` | Mirror, animated | `level`, mirror split on `kick`, beat warp on `kick` × `circ` | Trails and smear, the mirror seam breathing on the beat, melting on the beat when the circle knob is on. Pentagon knob = warp size |
 | `render3d.tox` | `render3d` | Top-down surface (S18) | off | Blender renders landed back on the tipis |
+| `blend.tox` | `vhs` `microscope` | Ramp | — | Microscope laid over vhs through multiply, add and difference — dark, glowing and ghosted at once. The old `blend_mix` |
 | `template.tox` | one, unnamed | Ramp | — | The minimum scene. Copy it to start a new one |
 
 In the show each is `/project1/scene_<name>`, in the **SCENES** box next to the LAYERS box, with
@@ -145,9 +146,32 @@ still wired to the scenes but feed nothing — kept for falling back while the m
 | 3 | `scene_render3d` | `scene_render3d/out_geo` |
 | 4 | `scene_mariokart` | `tipi_geo` |
 | 5 | `scene_vhs` | `tipi_geo` |
+| 6 | `scene_blend` | `tipi_geo` |
 
 `Render_Engine/geo1.material` switches to `scene_render3d/surface_topdown/mat_surface` on
 index 3 only, reading the mixer's `scene` channel.
+
+## blend
+
+The first scene with two layers, and the old `blend_mix` component tidied into a scene
+(2026-10-22). `blend_mix` sat in the show wired to nothing; it switched between mariokart and vhs
+as its base, which this drops — the base is always vhs.
+
+```
+in_vhs ───────┬─ blend_multiply ──┐
+in_microscope ┼─ blend_add ───────┴─ mix_mult_add ──┐
+              └─ blend_difference ──────────────────┴─ mix_difference ── uv_ramp ── lvl ── out1
+blend_ctrl (mult_add 0.5, difference 0.33)
+```
+
+vhs is the base (first input of each composite), microscope goes over it. All three blends run
+at 1280x720, microscope's size; vhs comes in at 1280x980 and is fitted. `blend_ctrl` is the
+whole control: `mult_add` 0 is all multiply, 1 all add; `difference` is how much of the
+difference blend goes on top. Good candidates for a knob.
+
+**In TOP order is alphabetical, not top to bottom.** `in_microscope` is the scene's input 0 and
+`in_vhs` input 1, wherever they sit in the network. Wire layers by the In TOP's name, not by
+position.
 
 ## render3d
 
