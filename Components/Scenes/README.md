@@ -118,7 +118,8 @@ midi -> knobs                      (at the top)
 3. Put effects between `in_<layer>` and the mapping, or copy `fx` / `pfx` from another scene.
    Swap `uv_ramp` for another mapping from `Components/UVMaps/` if wanted.
 4. Wire in the knobs you want from `knobs` — see Knobs above.
-5. Wire `out1` into `switch1` (and a mesh into `switch2`, S18), and save it here as `<name>.tox`.
+5. Wire `out1` into the next free input of `mixer`, add a matching `in_<n>` inside it (and a mesh
+   into `switch2`, S18), and save it here as `<name>.tox`.
 
 `template.tox` in this folder is the same component.
 
@@ -131,8 +132,10 @@ into a scene is its layers. They have the knob CHOPs at the top like every other
 
 ## Wiring in the show
 
-Scenes wire straight into `switch1` (image) and `switch2` (mesh). Until the mixer exists,
-both pick by the `button1` counter:
+Scenes wire into `mixer` (image) and `switch2` (mesh). Since 2026-10-22 the mixer picks the
+scene and `switch2` follows its `state` `scene` channel (`Components/Mixer/README.md`). The
+mixer's inputs are in the same order as the table below. `switch1` and the `button1` counter are
+still wired to the scenes but feed nothing — kept for falling back while the mixer is new:
 
 | Index | `switch1` | `switch2` |
 |---|---|---|
@@ -144,7 +147,7 @@ both pick by the `button1` counter:
 | 5 | `scene_vhs` | `tipi_geo` |
 
 `Render_Engine/geo1.material` switches to `scene_render3d/surface_topdown/mat_surface` on
-index 3 only.
+index 3 only, reading the mixer's `scene` channel.
 
 ## render3d
 

@@ -15,6 +15,8 @@ like, what it needs, and what drives it (Standard S3).
 | `Layers/` | Inputs, pre-fx, with their own settings. `vhs` / `microscope` switch test or live |
 | `Scenes/` | The looks: layers through effects, audio, UV mapping and knob bindings. `template.tox` is the minimum scene |
 | `Midi/` | The controller. Publishes four knobs, `tri` `pent` `circ` `sq`, 0 or 1 |
+| `Mixer/` | Runs the show: the pool, the clock, two buses and a transition between them |
+| `Transitions/` | One `.tox` per transition, A and B in, `Progress` 0 to 1. `fade_black`, `cross` |
 
 **How they stack in the show:**
 
@@ -25,7 +27,7 @@ audio ────────────────────────�
 midi ─────────────────────────────────▶   in_<layer> → fx → pfx → uv map → out
                                               knobs CHOP at the top, wired by hand
                                                           │
-                                       switch1 / switch2 (stand-in for the mixer)
+                                     mixer (two buses, transition) / switch2
                                                           │
                                  composition ─ master ─ show_tex ─ Render_Engine ─ projectors
 ```

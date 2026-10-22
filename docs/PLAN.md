@@ -17,7 +17,7 @@ real hours; 9 and 10 are the current design.
 | Tools installed | **Done.** Section 6 |
 | Per-tipi texturing / unwrap | **One unwrap complete.** Section 7. Resolution work still parked |
 | 3D pipeline | **In progress.** The current work — Blender renders landed on the tipis |
-| Layers, scenes, mixer | **Layers and scenes built 2026-10-21; mixer not.** Section 9 |
+| Layers, scenes, mixer | **Layers and scenes built 2026-10-21; mixer proof of concept 2026-10-22.** Section 9 — two buses, pool, clock, `fade_black` and `cross`. No panel yet |
 | Resolume as the mixer | **Alternative, not chosen.** Section 9A — every scene a clip, cooked on demand |
 | Audio reactivity | **Wired per scene.** The analysis comes in at the top of every scene; `vhs` breathes its mirror split and warps on the kick |
 | MIDI input | **Built, controller not yet learnt.** Section 10 — four 0/1 knobs, global values, each scene binds them its own way |
@@ -475,6 +475,38 @@ of us ever edit scenes in the same week, this is the thing to change first.
 
 Not built yet: `Active` does nothing until the mixer reads it, and nothing sets
 `allowCooking`. Both are the mixer's job.
+
+### Built 2026-10-22: the mixer, proof of concept
+
+`/project1/mixer`, in a new **MIXER** box between SCENES and COMPOSITION. Composition, master and
+the render region moved 1700 px right to make room; the box is deliberately mostly empty, for
+the panel and whatever the mixer grows next. `Components/Mixer/README.md` has the detail.
+
+| Built | How |
+|---|---|
+| Two buses | `bus_a` / `bus_b`, Switch TOPs over the six scene inputs. Only the selected scenes cook |
+| Flip-flop | Progress 0 = A on air, 1 = B. A transition runs to the other end, then the off-air bus loads the next scene. Nothing swaps |
+| Pool | `pool` DAT, rebuilt every frame from `Active` and `Layers`, with the reason a scene is out. `Active` now does something |
+| Clock | `scenelength` ± `variance` per scene, in the `sequencer` Execute DAT |
+| Chooser | `randomness` 0 walks the pool in order, 1 picks weighted by `Weight`, never the scene on air |
+| Transitions | `tr_fade_black` and `tr_cross`, to the contract below, picked by `ctrl` `transition`. Exported to `Components/Transitions/` |
+| By hand | `btn_auto`, `btn_pause`, `btn_next`, `fader` — nodes in the mixer network, not parameters |
+| Readouts | `readout` DAT: now, next, time left, transition, progress, last. For the panel, when it exists |
+
+`switch2` and `geo1.material` read `mixer/state` `scene` instead of the `button1` counter.
+`switch1` / `button1` are still wired to the scenes but feed nothing — a fallback while this is
+new. Delete them once the mixer has had a night.
+
+Measured: `fade_black` at progress 0.25 / 0.5 / 0.75 gave half of A / black / half of B; `cross`
+at 0.5 gave exactly the mean of the two buses. Auto ran several scenes through on its own, and
+switching `layer_vhs` off dropped `scene_vhs` from the pool as `layer vhs off`.
+
+Departures from the design below, all for simplicity: controls are nodes in the network rather
+than parameters on the COMP (Simon's standing preference); transitions are embedded in the mixer
+and added by wiring, not loaded from the folder listing; no `Cue`, no `cycle` / `random`
+transition modes, no fallback scene (an empty pool holds the scene on air), and nothing sets
+`allowCooking` yet. The mesh and material switch at the transition midpoint, which `fade_black`
+hides and `cross` does not.
 
 ### Layers
 

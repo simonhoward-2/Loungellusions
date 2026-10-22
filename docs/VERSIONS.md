@@ -27,6 +27,7 @@ tools/td-version.sh sync
 | `Components/Layers/render3d.tox` | 2025.32460 | macOS |
 | `Components/Layers/vhs.tox` | 2025.32460 | macOS |
 | `Components/Midi/midi.tox` | 2025.32460 | macOS |
+| `Components/Mixer/mixer.tox` | 2025.32460 | macOS |
 | `Components/PaletteFX/palettefx.tox` | 2025.32460 | macOS |
 | `Components/Scenes/mariokart.tox` | 2025.32460 | macOS |
 | `Components/Scenes/microscope.tox` | 2025.32460 | macOS |
@@ -34,6 +35,8 @@ tools/td-version.sh sync
 | `Components/Scenes/template.tox` | 2025.32460 | macOS |
 | `Components/Scenes/vhs.tox` | 2025.32460 | macOS |
 | `Components/Sources/sources.tox` | 2025.32460 | macOS |
+| `Components/Transitions/cross.tox` | 2025.32460 | macOS |
+| `Components/Transitions/fade_black.tox` | 2025.32460 | macOS |
 | `Components/UVMaps/uvmap_mariokart.tox` | 2025.32460 | macOS |
 | `Components/UVMaps/uvmap_mirror.tox` | 2025.32460 | macOS |
 | `Components/UVMaps/uvmap_ramp.tox` | 2025.32460 | macOS |
