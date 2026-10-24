@@ -38,6 +38,7 @@ tools/td-version.sh sync
 | `Components/Sources/sources.tox` | 2025.32460 | macOS |
 | `Components/Transitions/cross.tox` | 2025.32460 | macOS |
 | `Components/Transitions/fade_black.tox` | 2025.32460 | macOS |
+| `Components/Transitions/render3d.tox` | 2025.32460 | macOS |
 | `Components/UVMaps/uvmap_mariokart.tox` | 2025.32460 | macOS |
 | `Components/UVMaps/uvmap_mirror.tox` | 2025.32460 | macOS |
 | `Components/UVMaps/uvmap_ramp.tox` | 2025.32460 | macOS |

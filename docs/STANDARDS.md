@@ -246,7 +246,10 @@ README row. (Written when layers held the mapping; since 2026-10-21 the scene do
 - A **surface scene** hands over a *mesh and a material* instead. It writes its own unwrap
   into **UV layer 1** of the show mesh, publishes that mesh on a SOP output, and supplies the
   material to wear with it. `switch2` picks the mesh on the scene index, `geo1.material`
-  picks the material on the same index. The `render3d` scene is the only one so far.
+  picks the material on the same index. The `render3d` scene was the only one; since 2026-10-24 it
+  is no longer in rotation and its surface path is the overlay of the `render3d` transition,
+  drawn by `Render_Engine/geo_overlay` (see `Components/Scenes/README.md`). The mechanism
+  stands for any future surface scene.
 
 Both go through the same `geo1` and the same calibrated cameras, so there is one render pass
 either way and projector calibration is untouched.

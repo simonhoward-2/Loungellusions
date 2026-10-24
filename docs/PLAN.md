@@ -494,7 +494,8 @@ the panel and whatever the mixer grows next. `Components/Mixer/README.md` has th
 | Readouts | `readout` DAT: now, next, time left, transition, progress, last |
 | Monitor | `mixer/monitor`, shown on the main network as `mixer_monitor`: now and next with thumbnails, clock and transition bars, the output, a two-minute history of both buses, the pool coloured by state, and Play / Pause / Next. Clickable on the main network |
 
-`switch2` and `geo1.material` read `mixer/state` `scene` instead of the `button1` counter.
+`switch2` and `geo1.material` read `mixer/state` `scene` instead of the `button1` counter (since
+2026-10-24 only `switch2` still does, see the render3d overlay below).
 `switch1` / `button1` are still wired to the scenes but feed nothing — a fallback while this is
 new. Delete them once the mixer has had a night.
 
@@ -507,7 +508,43 @@ than parameters on the COMP (Simon's standing preference); transitions are embed
 and added by wiring, not loaded from the folder listing; no `Cue`, no `cycle` / `random`
 transition modes, no fallback scene (an empty pool holds the scene on air), and nothing sets
 `allowCooking` yet. The mesh and material switch at the transition midpoint, which `fade_black`
-hides and `cross` does not.
+hides and `cross` does not. *(The render3d snap is gone, see below.)*
+
+### Built 2026-10-24: render3d as an overlay transition
+
+`render3d` stopped being a scene in rotation and became a **transition** the mixer triggers:
+the Blender render plays on top of whatever is on the tipis while the strip underneath crosses
+from scene A to scene B. Detail is in `Components/Mixer/README.md`,
+`Components/Transitions/README.md` and the render3d section of `Components/Scenes/README.md`.
+
+| Built | How |
+|---|---|
+| `tr_render3d`, transition 2 | Wired into `transition` input 2, same contract. It began as a copy of `tr_cross`; since the same day it is a dip to black (A out, B in) by the overlay's own envelope (`dip` in `state`), so the render plays on black. With the layer off you still get the dip Exported to `Components/Transitions/render3d.tox`. `levels()` already drew it as a cross |
+| `overlay` | New `state` channel. The sequencer latches the transition index at `begin()` and publishes 0 outside a render3d transition; inside, a smoothstep up over the first `overlayrise` (0.3) of `tprog`, 1 through the middle, down over the last `overlayfall` (0.3). Both live in `ctrl`. 0 when `layer_render3d` is off |
+| `Render_Engine/geo_overlay` | Copy of `geo1`, mesh from `scene_render3d/out_geo` through a new third input `in3`, material `mat_overlay`: uv1 off `surface_topdown/lvl_master`, additive, depth test less-or-equal, no depth write, colour = `overlay`, draw priority -1. `render` = `overlay > 0` |
+| `scene_render3d` out of rotation | `Active` off. `geo1.material` is fixed on `constant1`; `switch2` index 3 points at `tipi_geo`. The midpoint swap is gone, nothing else needed it |
+| Cooking | The sequencer sets `allowCooking` on `layer_render3d` and `scene_render3d` only while a render3d transition runs. Idle: 0 cooks of the movie and the scene over 359 frames. Left on, the movie decoded 347 of 356 frames for nothing |
+| Restart | The movie `car_trail` is in `specify` mode, index in seconds since `r3d_t0`, stored at `begin()`. The scene's trail feedback is reset at the same moment |
+| Monitor | Transition bar reads `render3d 10.4 s running overlay 0.40`; the history graph has a third line, `overlay` |
+| Transition pool, same day | Each `tr_` COMP has `Active` / `Weight` / `Layers`. `tpool` lists them like `pool` lists scenes (`render3d` is out when its layer is off). When a scene lands the sequencer picks the next transition and its length (`tr`, `fade` in `state`); `ctrl` `transition` -1 is the pool, 0-2 force one, `trrandom` orders them. The monitor has a second pool row and the main network a `mixer_tpool` tile |
+| Length, same day | `render3d` runs as long as the clip: frames / rate from `layer_render3d/clip_info`, 250 / 24 = 10.42 s, plays once through. Every other transition draws a random length between `fademin` (2) and `fademax` (8). `fadetime` is gone |
+
+Measured at a 60 s fade, one frame at a time: at the midpoint `overlay` 1.0, the preview equals
+`geo1` plus the overlay clipped at 1 (mean abs error 0.0), no overlay pixels lost to depth;
+falling at `tprog` 0.88 it was 0.351 (smoothstep of 0.4 is 0.352); after landing `overlay` 0,
+`geo_overlay.render` off, both gated COMPs not cooking, `mat_overlay` colour 0. `fade_black` at
+`tprog` 0.64 gave B at 0.279 (mean 0.0208 = 0.0745 x 0.279) and `cross` at 0.5 the mean of A and
+B, with `overlay` 0 and the overlay not drawn in both. (That was with render3d as a cross; it is a dip
+now. Measured after: strip output 0.0 at `dip` 1.0, and `levels()` draws A out then B in.)
+
+Things to know: a manual fader move does not draw the overlay (only a running transition does);
+with `layer_render3d` off, transition 2 is just a cross, and the pool leaves it out. The fade
+time following the clip, proposed in the first version of this section, is built: see the length
+row. Measured: a pool-style render3d run had `fade` 10.417 and the movie index at 6.17 s when
+`tprog` was 0.592; after it landed a new transition was picked (cross, 3.1 s) and both gated COMPs
+were off again. Over 400 picks the render3d length was always 10.42 and the others always inside
+2.03-7.99 s, with no transition picked twice running, and with the layer off only `fade_black` and
+`cross` were picked.
 
 ### Layers
 

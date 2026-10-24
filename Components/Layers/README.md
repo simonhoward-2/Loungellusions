@@ -11,7 +11,7 @@ A layer is an **input, pre-fx**: the operators that bring a picture in, with the
 | `microscope.tox` | `micro` (test) · `camera` · `stream` | `input` switch picks one. The test input is the microscope sample player |
 | `vhs.tox` | `vhs` (test) · `camera` · `stream` | `input` switch picks one. The test input is the tape sample player |
 | `mariokart.tox` | `mario` | Movie file |
-| `render3d.tox` | `car_trail` | Movie file, a Blender render |
+| `render3d.tox` | `car_trail` | Movie file, a Blender render. Its `Active` is the master switch for the render3d transition's overlay; the movie is in `specify` mode, indexed from the start of each transition |
 | `cam_41.tox` | `cam_41` | RTSP `192.168.1.41:554/stream1`. Feeds `teepee_feedback` |
 | `cam_71.tox` | `cam_71` | RTSP `192.168.1.71:554/stream2`. Feeds `base1` |
 

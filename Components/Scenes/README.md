@@ -12,7 +12,7 @@ and a plain ramp in another.
 | `microscope.tox` | `microscope` | Ramp | `low` | Macro footage, hue drifting with the bass |
 | `mariokart.tox` | `mariokart` | Mirror, static (`uv_mariokart`) | `kick` | Split-screen racing, bloom on the beat |
 | `vhs.tox` | `vhs` | Mirror, animated | `level`, mirror split on `kick`, beat warp on `kick` × `circ` | Trails and smear, the mirror seam breathing on the beat, melting on the beat when the circle knob is on. Pentagon knob = warp size |
-| `render3d.tox` | `render3d` | Top-down surface (S18) | off | Blender renders landed back on the tipis |
+| `render3d.tox` | `render3d` | Top-down surface (S18) | off | Blender renders landed back on the tipis. **Not in rotation:** `Active` is off, it is the overlay of the `render3d` transition |
 | `blend.tox` | `vhs` `microscope` | Ramp | — | Microscope laid over vhs through multiply, add and difference — dark, glowing and ghosted at once. The old `blend_mix` |
 | `template.tox` | one, unnamed | Ramp | — | The minimum scene. Copy it to start a new one |
 
@@ -146,13 +146,15 @@ still wired to the scenes but feed nothing — kept for falling back while the m
 | 0 | `base1` (camera `cam_71`) | `base1/out4` |
 | 1 | `teepee_feedback` (camera `cam_41`) | `teepee_feedback/out2` |
 | 2 | `scene_microscope` | `tipi_geo` |
-| 3 | `scene_render3d` | `scene_render3d/out_geo` |
+| 3 | `scene_render3d` (out of rotation) | `tipi_geo` |
 | 4 | `scene_mariokart` | `tipi_geo` |
 | 5 | `scene_vhs` | `tipi_geo` |
 | 6 | `scene_blend` | `tipi_geo` |
 
-`Render_Engine/geo1.material` switches to `scene_render3d/surface_topdown/mat_surface` on
-index 3 only, reading the mixer's `scene` channel.
+`Render_Engine/geo1.material` is fixed on `constant1`. It used to switch to
+`scene_render3d/surface_topdown/mat_surface` on index 3, a snap at the transition midpoint; that
+went when render3d stopped being a scene. `switch2` index 3 now points at `tipi_geo` so nothing
+can pick the render3d mesh by accident.
 
 ## blend
 
@@ -189,6 +191,32 @@ the show mesh with a second UV set in layer 1 — and a material, `mat_surface`,
 
 `lvl_master` carries `Masterlevel * Masterfade` because this path never passes through
 `master`. Without it the blackout would not cover this scene.
+
+### As the overlay of the `render3d` transition (2026-10-24)
+
+`render3d` is no longer a scene in rotation (`Active` off, so the pool never offers it). It is the
+overlay of the mixer's `render3d` transition (`Components/Transitions/README.md`):
+
+```
+scene_render3d/out_geo ── Render_Engine/in3 ── geo_overlay ── (material) mat_overlay
+                                                                  colormap = surface_topdown/lvl_master, uv1
+```
+
+`geo_overlay` is a copy of `geo1` with `mat_overlay`, a Constant MAT: additive blend (`one` /
+`one`), depth test less-or-equal, no depth write, colour = `mixer/state` `overlay`, and **draw
+priority -1** so it is drawn after `geo1` (the Render TOP draws the higher number first; at 1 it
+was drawn first and `geo1` painted over it). Same mesh, same matrices: measured over a frame of
+272,369 overlay pixels, none were lost to depth, and the result equals `geo1` + overlay clipped
+at 1. Its `render` is `overlay > 0`, so it is not drawn outside the transition. It sits behind
+`lvl_master`, so `Masterlevel * Masterfade` still applies. It renders into `proj1`, `proj2` and
+`preview` through the same cameras as `geo1`; calibration is untouched.
+
+`layer_render3d` needs `Active` **on** for the overlay to show (it is the switch for it; the
+scene's own `Active` stays off). The movie `car_trail` is in `specify` mode with its index in
+seconds since the transition began (`absTime.seconds - mixer.fetch('r3d_t0')`), not the project
+timeline, so every transition shows the clip from the start. The mp4 is 250 frames at 24 fps and the
+transition is exactly that long (10.42 s, read from `layer_render3d/clip_info`), so it plays once
+through, first frame at the start of the cross, last frame at the end.
 
 Its effect wets used to be typed straight onto `fx` (edge 0.241, warp 0.145, trails 0.338),
 which left the scene's own pages at 0 and doing nothing. They are on the scene pages now, with
