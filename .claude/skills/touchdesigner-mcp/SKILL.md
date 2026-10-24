@@ -144,6 +144,14 @@ parameters alone:
 alphabetical. Wire by name: `comp.inputConnectors[i].inOP.name` tells you which In OP a connector
 feeds. Numbered names (`in_0`, `in_1`) keep position and order the same.
 
+### Clickable panels on the network: annotate, not OP Viewer TOP
+
+An OP Viewer TOP draws a panel but never passes it clicks. To put a working panel on a network,
+use an `annotateCOMP` with `Opviewer` set to the panel, `Opviewerdisplay` and
+`Opviewerinteractive` on, and `Opvieweroversize` = `autofit`. To test buttons from a script, set
+the panel value directly — `btn.panel.lselect.val = 1` then `0` fires a Panel Execute DAT's
+`onOffToOn` exactly like a click. Text COMPs have no `.click()`.
+
 ### Sparse noise costs about six times what perlin does
 
 The Noise TOP's `sparse` type is in a different price bracket from the rest. Measured on the

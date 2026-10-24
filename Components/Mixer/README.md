@@ -57,17 +57,19 @@ Only the two selected scenes cook — a Switch TOP cooks just its chosen input.
 
 **The pool.** `pool` has one row per input: available, or why not — `off by hand` (the scene's
 `Active`), `layer vhs off` (a layer it names is off) or `no layer x` (it names a layer that does
-not exist). The camera scenes have no `Active` or `Layers` and always count as available.
+not exist). The camera scenes (`base1`, `teepee_feedback`) have `Layers` only, so they follow their camera layer;
+a scene with neither `Active` nor `Layers` always counts as available.
 A scene that goes unavailable while on air finishes its run; it is just not picked again.
 
 `readout` holds now, next, time left, transition, fade time, progress, last, mode and paused.
 
-**The monitor.** `monitor` is a display-only Container COMP, 1280x860, and `/project1/mixer_monitor`
-(an OP Viewer TOP in the MIXER box) shows it on the main network. Top to bottom:
+**The monitor.** `monitor` is a Container COMP, 1280x860, and `/project1/mixer_monitor` (an
+annotate box in the MIXER box with its OP viewer on and **interactive**) shows it on the main
+network — clickable there. An OP Viewer TOP was used first and cannot take clicks. Top to bottom:
 
 | Part | Shows |
 |---|---|
-| Header | AUTO / MANUAL, PAUSED, and the last scene |
+| Header | AUTO / MANUAL, PAUSED, the last scene, and the **PLAY / PAUSE / NEXT** buttons |
 | NOW / NEXT | Name and a live thumbnail of each bus, green for on air, amber for cued |
 | Clock bar | How far through this scene, and seconds to the next transition |
 | Transition bar | Which transition, its fade time, and how far through it is while it runs |
@@ -78,7 +80,14 @@ A scene that goes unavailable while on air finishes its run; it is just not pick
 The pictures are cropped to the band the tipi UVs actually use, v 0 to 0.37 of the strip
 (`band_now`, `band_next`, `band_out`), and stretched to fit, so they read about twice as tall as
 the real proportions. Everything reads `state`, `readout` and `pool` by expression through
-`parent.Mixer`; nothing in the monitor computes. It only cooks while something is looking at it.
+`parent.Mixer`; nothing in the monitor computes.
+
+The buttons are Text COMPs; `button_exec` (a Panel Execute DAT on their `lselect`) drives the
+mixer's own controls, so the two sets of buttons never disagree. **Play** turns `btn_auto` on and
+`btn_pause` off. **Pause** turns `btn_pause` on. **Next** stores `next_request` on the mixer and the
+sequencer runs the transition on its next frame — it works while paused too, and stays paused
+after. Play lights green while the clock runs, Pause amber while paused, Next amber while a
+transition runs. It only cooks while something is looking at it.
 `mixer_history`, `mixer_readout` and `mixer_pool` sit next to it on the main network as plain
 tiles. There is one pool cell per mixer input, built by script; a new scene needs its cell added
 (the cells are `monitor/pool_<n>`, 170 px wide at seven).
@@ -87,7 +96,7 @@ tiles. There is one pool cell per mixer input, built by script; a new scene need
 sorts after the others — In TOPs order alphabetically), wire `in_<n>` into input `n` of `bus_a`
 and `bus_b`, give `switch2` a mesh at the same index, and add a pool cell to `monitor`.
 
-**Not built yet:** the panel's controls (the monitor only shows), `allowCooking` on inactive layers, a fallback scene for an empty
+**Not built yet:** Auto and the fader on the monitor (they are still only in the CONTROLS box), `allowCooking` on inactive layers, a fallback scene for an empty
 pool (it holds the scene on air instead), `Cue` (choosing B by hand), and `cycle` / `random`
 transition modes.
 

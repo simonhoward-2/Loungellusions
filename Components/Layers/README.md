@@ -15,7 +15,17 @@ A layer is an **input, pre-fx**: the operators that bring a picture in, with the
 | `cam_41.tox` | `cam_41` | RTSP `192.168.1.41:554/stream1`. Feeds `teepee_feedback` |
 | `cam_71.tox` | `cam_71` | RTSP `192.168.1.71:554/stream2`. Feeds `base1` |
 
-**Parameters:** `Active` only. Off takes the layer out of the show; the mixer will read it.
+**Parameters:** `Active` only. Off takes the layer out of the show; the mixer's pool reads it.
+
+**Switching by hand:** under each layer in the LAYERS box on the main network sits a big
+button, `btn_<layer>` — green `VHS ON`, red `VHS OFF`. Click it to flip `Active`. The layer keeps
+cooking either way; off only drops its scenes from the pool (a scene already on air finishes).
+The buttons are Text COMPs with their viewer **and active viewer** on — without the active viewer
+the picture shows but clicks do nothing. And `layer_buttons_exec` (a Panel Execute DAT
+at the bottom of the box) flips `Active`. `Active` stays the one truth, so setting it on the layer
+or in a script moves the button too. A new layer needs its button added: copy one, rename it
+`btn_<layer>`, point its `text` and colour expressions at the new layer, and add it to
+`layer_buttons_exec`'s Panels.
 
 ## Test or live: the `input` switch
 

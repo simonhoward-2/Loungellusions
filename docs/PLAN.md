@@ -17,7 +17,7 @@ real hours; 9 and 10 are the current design.
 | Tools installed | **Done.** Section 6 |
 | Per-tipi texturing / unwrap | **One unwrap complete.** Section 7. Resolution work still parked |
 | 3D pipeline | **In progress.** The current work — Blender renders landed on the tipis |
-| Layers, scenes, mixer | **Layers and scenes built 2026-10-21; mixer proof of concept 2026-10-22.** Section 9 — two buses, pool, clock, `fade_black` and `cross`, and a display-only monitor |
+| Layers, scenes, mixer | **Layers and scenes built 2026-10-21; mixer proof of concept 2026-10-22.** Section 9 — two buses, pool, clock, `fade_black` and `cross`, and a monitor with Play / Pause / Next |
 | Resolume as the mixer | **Alternative, not chosen.** Section 9A — every scene a clip, cooked on demand |
 | Audio reactivity | **Wired per scene.** The analysis comes in at the top of every scene; `vhs` breathes its mirror split and warps on the kick |
 | MIDI input | **Built, controller not yet learnt.** Section 10 — four 0/1 knobs, global values, each scene binds them its own way |
@@ -492,7 +492,7 @@ the panel and whatever the mixer grows next. `Components/Mixer/README.md` has th
 | Transitions | `tr_fade_black` and `tr_cross`, to the contract below, picked by `ctrl` `transition`. Exported to `Components/Transitions/` |
 | By hand | `btn_auto`, `btn_pause`, `btn_next`, `fader` — nodes in the mixer network, not parameters |
 | Readouts | `readout` DAT: now, next, time left, transition, progress, last |
-| Monitor | `mixer/monitor`, shown on the main network as `mixer_monitor`: now and next with thumbnails, clock and transition bars, the output, a two-minute history of both buses, and the pool coloured by state. Display only |
+| Monitor | `mixer/monitor`, shown on the main network as `mixer_monitor`: now and next with thumbnails, clock and transition bars, the output, a two-minute history of both buses, the pool coloured by state, and Play / Pause / Next. Clickable on the main network |
 
 `switch2` and `geo1.material` read `mixer/state` `scene` instead of the `button1` counter.
 `switch1` / `button1` are still wired to the scenes but feed nothing — a fallback while this is
@@ -514,8 +514,12 @@ hides and `cross` does not.
 Live in `Components/Layers/`, one `.tox` each. A layer is a source and nothing more:
 
 - **`Active`** toggle. Off means the layer is out of the show.
-- When off, the mixer sets `.allowCooking = False` on it, so an inactive layer costs nothing.
-  This is the real lever — a bypassed-but-cooking layer still burns GPU.
+- **Decided 2026-10-24: an off layer keeps cooking.** Off only drops its scenes from the pool.
+  Setting `allowCooking = False` would freeze a layer under a scene still on air, and the scene is
+  meant to finish. The cost is GPU for layers nobody is using; revisit if that bites, and if so cook
+  the layer off only once none of its scenes is on either bus.
+- **Switched by a big button under each layer** in the LAYERS box (`btn_<layer>`, green ON / red
+  OFF), which flips `Active`. See `Components/Layers/README.md`.
 - **Its own inputs**, with their settings. `/project1/sources` is parked; nothing reads it.
 
 Effects, audio and mapping are the scene's (S13).
@@ -747,10 +751,13 @@ gone.*
   UV-coordinates-as-colour measurement before trying again — that now exists, as
   `render3d/uv_topdown/uvgen_topdown`, built for the top-down mapping. The measurement section 7
   wanted is available; the decision it was meant to inform is still open.
-- **`Masterfade` does nothing.** `master.opacity` only scales alpha and `Render_Engine/constant1`
-  has blending off, so the alpha is discarded. Measured: identical RGB at fade 1.0 and 0.25. The
-  blackout has never dimmed the projectors. One-line fix, not yet applied, because it changes
-  what the projectors do.
+- **`Masterfade` — fixed 2026-10-24.** It used to drive `master.opacity`, which only scales
+  alpha, and `Render_Engine/constant1` has blending off, so the blackout never dimmed the
+  projectors. `master.brightness1` is now `Masterlevel * Masterfade`, `opacity` stays 1. Measured on
+  `master`: mean RGB at fade 0.25 is 0.248 of fade 1.0, and 0 at fade 0. The projector output
+  `null5` fell by the same ratio. The top-down overlay path bypasses `master` and already
+  multiplies the two itself in `render3d/surface_topdown/lvl_master`. `Feature` and `Layermix`,
+  fossils from the old composition stage that nothing read, were deleted the same day.
 - **The canopy.** The mesh is cone A + canopy + cone B, and the unwrap runs continuously across
   all three. Scenes may eventually want to address the canopy separately; nothing here does.
 - **`Uvset` is a fossil.** `/project1` carries `Uvset` (`fan` / `rect` / `recttrunc` / `fanpack`)

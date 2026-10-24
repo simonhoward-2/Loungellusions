@@ -131,6 +131,9 @@ midi -> knobs                      (at the top)
 select used to sit at the master level, wired in; it lives inside now so the only thing wired
 into a scene is its layers. They have the knob CHOPs at the top like every other scene.
 
+They carry one parameter, `Layers` (`cam_71` on `base1`, `cam_41` on `teepee_feedback`), so the
+mixer pool drops them when their camera layer is off. They have no `Active` or `Weight`.
+
 ## Wiring in the show
 
 Scenes wire into `mixer` (image) and `switch2` (mesh). Since 2026-10-22 the mixer picks the
