@@ -18,6 +18,7 @@ real hours; 9 and 10 are the current design.
 | Per-tipi texturing / unwrap | **One unwrap complete.** Section 7. Resolution work still parked |
 | 3D pipeline | **In progress.** The current work — Blender renders landed on the tipis |
 | Layers, scenes, mixer | **Layers and scenes built 2026-10-21; mixer proof of concept 2026-10-22.** Section 9 — two buses, pool, clock, `fade_black` and `cross`, and a monitor with Play / Pause / Next |
+| Kaleidoscope + UV wipe | **Built 2026-10-24.** A mirrored top-down scene, mixer input 7, and the `uvwipe` transition it asks for. Stream source still to choose. Section 9 |
 | Resolume as the mixer | **Alternative, not chosen.** Section 9A — every scene a clip, cooked on demand |
 | Audio reactivity | **Wired per scene.** The analysis comes in at the top of every scene; `vhs` breathes its mirror split and warps on the kick |
 | MIDI input | **Built, controller not yet learnt.** Section 10 — four 0-1 knobs (a range since 2026-10-24), global values, each scene binds them its own way |
@@ -546,6 +547,32 @@ were off again. Over 400 picks the render3d length was always 10.42 and the othe
 2.03-7.99 s, with no transition picked twice running, and with the layer off only `fade_black` and
 `cross` were picked.
 
+### Built 2026-10-24: the kaleidoscope and the UV wipe
+
+A physical-kaleidoscope video stream as a new input, mapped top-down and mirrored between the
+tipis, with the UV-space wipe from the Transitions list below as its transition. Detail in the
+READMEs named in the table.
+
+| Built | How |
+|---|---|
+| `layer_kaleidoscope` | LAYERS box, row below `vhs`. `Active` only. A `kaleido` movie (test, a microscope gem clip), `camera`, `stream` and a `grid_out` test card behind an `input` switch, as in `vhs`. **The stream source is not decided**: `stream` waits for a URL. `Components/Layers/kaleidoscope.tox` |
+| `scene_kaleidoscope`, mixer input 7 | `in_kaleidoscope` -> `uv_topdown_mirror` -> `lvl` -> `out1`. In the mixer at `in_7`, `bus_a` / `bus_b` index 7, `switch2` index 7 (`tipi_geo`), and a pool cell in the monitor. `Components/Scenes/kaleidoscope.tox` |
+| `uv_topdown_mirror` | Each tipi gets the frame centred on its own apex (0 and 115.12, z 0, radius 51.1); tipi 2 reads x reversed, so it is the mirror image of tipi 1 and the canopy has no seam. A branch of `uvmap_topdown` (S19): embedded in the scene and saved as `Components/UVMaps/uvmap_topdown_mirror.tox`. Checked with a test card: an F upright on tipi 1, reversed on tipi 2 |
+| `tr_uvwipe`, transition 3 | `uvgen_sweep` renders the mesh into strip space writing a sweep field (angle round each cone from its outer back, meeting over the canopy); a GLSL TOP mixes A and B by it with a soft edge. Runs backwards. `Components/Transitions/uvwipe.tox` |
+| `Transition` on the Scene page | A scene can ask the mixer for a transition by name. The sequencer reads it when it picks the next one (the entered scene first, then the one being left); a forced `ctrl` choice wins. `scene_kaleidoscope` asks for `uvwipe`; the scene template has the parameter, blank |
+
+Measured: the sweep field's coverage of the mesh at progress 0.3 / 0.7 is 0.22 / 0.76, which is
+what the history graph draws (a smoothstep). The wipe is exactly A at progress 0 and exactly B at
+1. At progress 0.5 with the test card on B, the outer backs of both cones show B and the canopy
+side shows A, mirror-symmetric. With the kaleidoscope landed on, the next transition was picked
+as `uvwipe`; between two other scenes the pool still picks. `fade_black` at 0.25 / 0.5 gave a
+quarter-bright / black picture, `cross` at 0.5 the mean of the two buses, and `render3d` forced
+ran with its overlay at 1.0 mid-run and everything off again after it landed, all as before.
+
+Open: which stream feeds `layer_kaleidoscope` (NDI, Syphon, a URL, a capture device). Until
+then it plays a stand-in clip. The wipe's `soft` (0.3) and `across` (0.3) are guesses to be
+tuned on the real tipis.
+
 ### Layers
 
 Live in `Components/Layers/`, one `.tox` each. A layer is a source and nothing more:
@@ -703,10 +730,11 @@ First one to build, and the default:
 - **`fade_black`** — A down to black over the first half, B up from black over the second.
 
 Obvious ones after that: `cross` (a straight dissolve), `blend` (composite A and B with a mode —
-add, screen, difference — and pass through it, A → blended → B), and eventually a wipe driven in
+add, screen, difference — and pass through it, A → blended → B), and a wipe driven in
 UV space, which on this geometry reads as a sweep travelling around the cones and across the
 canopy rather than a line crossing a rectangle. That last one is the one worth the effort; it is
-the only transition on the list that could not be done on a flat screen.
+the only transition on the list that could not be done on a flat screen. *Built 2026-10-24 as
+`uvwipe`, see above.*
 
 ### Resolume: the mixing surface, not the scene store
 

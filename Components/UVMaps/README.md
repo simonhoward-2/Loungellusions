@@ -10,6 +10,8 @@ input and one output, instanced inside every scene so a scene owns its own mappi
 | `uvmap_mariokart.tox` | **Mirror, static.** The original mirror method with fixed 50/50 crops. Kept separate from `uvmap_mirror.tox` so the mariokart layer can't inherit the animation. Used by `mariokart` (node renamed to `uv_mariokart` inside that layer) |
 | `uvmap_topdown.tox` | **Top-down.** For footage that is already a view of the tipis from above — Blender renders, mostly. Each point of the tipi surface samples the footage at its own footprint position. Its generator is `uvgen_topdown`. Used by `render3d` |
 
+| `uvmap_topdown_mirror.tox` | **Top-down, mirrored.** A branch of `uvmap_topdown` (S19) for a picture that is centred on each tipi's own apex, the second tipi its mirror image. Embedded in `scene_kaleidoscope` (`externaltox` cleared) and also saved here, so it can be dropped into another scene. Its generator is `uvgen_topdown`, with a different pixel shader |
+
 All output 1280x360 — the unrolled tipi strip.
 
 These are **image mappings**: a TOP in, a TOP out, listed in a layer's `Mapping` menu. A
@@ -88,6 +90,37 @@ Neither is in the show path, so they cost nothing unless you open them.
 Note the show's own preview (`Render_Engine/preview_cam`) sits *below* the floor looking up,
 so it shows the dark insides of the cones with content only on the rims. That is the camera,
 not the mapping — judge the mapping on `preview_topdown`.
+
+## The mirrored top-down mapping
+
+`uvmap_topdown` samples one top-down frame across **both** tipis by their combined footprint.
+This one gives each tipi the whole frame. The generator is the same render of the mesh into its
+own texture space; only the pixel shader changed. For a surface point at world `(x, z)`:
+
+1. Find its offset from its own apex. Tipi 1 (x below the midpoint, 57.56) uses `x - apex1`.
+   Tipi 2 uses `apex2 - x`, the x axis reversed: that is the mirror. The two halves agree at the
+   midpoint, so the canopy between the cones has no seam.
+2. Scale by the frame: a square `2 x Baser x Frame` across, centred on the apex. `Frame` 1 puts the
+   base ring on the edge of the square; less than 1 crops into the picture.
+3. Fit to the footage's aspect, taking the largest centred square, so a round kaleidoscope stays
+   round. The aspect is read from `in1`.
+4. Apply `Flipu` / `Flipv` / `Swapuv`, add the offset, hand it to the Remap TOP as the colour.
+
+| Parameter (Mirror page) | Value | Means |
+|---|---|---|
+| `Apex1x`, `Apex2x`, `Apexz` | 0, 115.12, 0 | tipi apexes, world units (measured, see above) |
+| `Baser` | 51.1 | base radius |
+| `Frame` | 1.0 | square side, in base diameters |
+| `Uoffset`, `Voffset` | 0 | nudge the picture |
+| `Flipu`, `Flipv`, `Swapuv` | off, on, off | same meaning as in `uvmap_topdown`; checked with the test card so the picture reads upright from above on tipi 1 |
+
+There is no `bounds` CHOP and no Blender frame: nothing here depends on how a render was framed.
+**Re-measure the apexes and radius if the model changes.** `preview_topdown` inside the component
+shows the mapped picture on the tipis from above.
+
+Embedded in the scene or saved as a component: both, on purpose. The scene's copy is the working
+one; `uvmap_topdown_mirror.tox` is the same component for reuse. Per S19 it is a branch of
+`uvmap_topdown`, so it carries no `externaltox` link.
 
 ## Why the mirror mapping has two generators
 

@@ -12,6 +12,7 @@ A layer is an **input, pre-fx**: the operators that bring a picture in, with the
 | `vhs.tox` | `vhs` (test) · `camera` · `stream` | `input` switch picks one. The test input is the tape sample player |
 | `mariokart.tox` | `mario` | Movie file |
 | `render3d.tox` | `car_trail` | Movie file, a Blender render. Its `Active` is the master switch for the render3d transition's overlay; the movie is in `specify` mode, indexed from the start of each transition |
+| `kaleidoscope.tox` | `kaleido` (test) · `camera` · `stream` · `grid_out` (test card) | `input` switch picks one. The test input is a microscope gem clip, a stand-in until the real stream is chosen. The stream source (NDI, Syphon, a URL, a capture device) is **not decided**: `stream` is a Video Stream In waiting for a `url`, `camera` is a Video Device In. Index 3 is a test card with an F dead centre, for checking the mirror |
 | `cam_41.tox` | `cam_41` | RTSP `192.168.1.41:554/stream1`. Feeds `teepee_feedback` |
 | `cam_71.tox` | `cam_71` | RTSP `192.168.1.71:554/stream2`. Feeds `base1` |
 
@@ -39,6 +40,11 @@ or in a script moves the button too. A new layer needs its button added: copy on
 
 Change the index on the switch itself, inside the layer. Only the selected input cooks, so an
 unplugged camera costs nothing while the test footage is on. Both default to 0.
+
+`kaleidoscope` is built the same way with a fourth input, `grid_out` (index 3), a test card. Its
+test input (index 0) is one movie, `kaleido`, looping a microscope sample, not a playlist. The
+card is asymmetric on purpose, and everything on it sits inside the middle square of the frame,
+because the scene's top-down mirror mapping crops to the largest centred square of the footage.
 
 ## The test players
 

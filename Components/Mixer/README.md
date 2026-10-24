@@ -8,7 +8,7 @@ carries the picture into it with a transition. First version, 2026-10-22: a proo
 
 **Looks like:** the show image. `out1` is 1280x360, the same strip `switch1` used to hand on.
 
-**In the show:** `/project1/mixer`, in the **MIXER** box between SCENES and COMPOSITION. The seven
+**In the show:** `/project1/mixer`, in the **MIXER** box between SCENES and COMPOSITION. The eight
 scenes are wired into its inputs in the old `switch1` order, and `out1` feeds `composition`.
 
 | Input | Scene |
@@ -20,6 +20,7 @@ scenes are wired into its inputs in the old `switch1` order, and `out1` feeds `c
 | 4 | `scene_mariokart` |
 | 5 | `scene_vhs` |
 | 6 | `scene_blend` |
+| 7 | `scene_kaleidoscope` |
 
 **Publishes** `/project1/mixer/state`: `a` and `b` (the scene index on each bus), `progress`,
 `scene` (the one on air), `running`, `clock` (0–1 through this scene), `left` (seconds),
@@ -36,14 +37,15 @@ midpoint of a transition. `Render_Engine/geo1.material` is fixed on `constant1`.
 | `btn_pause` | Hold the scene on air. The clock stops, nothing transitions |
 | `btn_next` | Run the transition now, Auto or not |
 | `fader` | Manual progress while Auto is off. Picked up only when moved |
-| `ctrl` | `scenelength` s (20), `variance` 0–1 (0.2), `randomness` 0 in order / 1 weighted random (0), `fademin` / `fademax` s (2 / 8: a random transition length is drawn between them), `transition` **-1 pick from the pool** / 0 `fade_black` / 1 `cross` / 2 `render3d` to force one, `trrandom` 0 walk the transitions in order / 1 weighted random (1), `overlayrise` / `overlayfall` (0.3 each: the share of a render3d transition spent fading the overlay in and out) |
+| `ctrl` | `scenelength` s (20), `variance` 0–1 (0.2), `randomness` 0 in order / 1 weighted random (0), `fademin` / `fademax` s (2 / 8: a random transition length is drawn between them), `transition` **-1 pick from the pool** / 0 `fade_black` / 1 `cross` / 2 `render3d` / 3 `uvwipe` to force one, `trrandom` 0 walk the transitions in order / 1 weighted random (1), `overlayrise` / `overlayfall` (0.3 each: the share of a render3d transition spent fading the overlay in and out) |
 
 **Inside:**
 
 ```
-in_0..in_6 ─┬─ bus_a ─┬─ tr_fade_black ─┐
-            └─ bus_b ─┼─ tr_cross ──────┼─ transition ── out1
-                      └─ tr_render3d ───┘
+in_0..in_7 ─┬─ bus_a ─┬─ tr_fade_black ─┐
+            └─ bus_b ─┼─ tr_cross ──────┤
+                      ├─ tr_render3d ───┼─ transition ── out1
+                      └─ tr_uvwipe ─────┘
 
 sequencer (Execute DAT, every frame) ── bus_state ── state
                                      ── pool, readout
@@ -64,6 +66,17 @@ next transition **and its length** together (`tr_index`, `fade` in the mixer's s
 `fade` in `state`) so the monitor shows what is coming. `ctrl` `transition` -1 picks from the pool
 (`trrandom` 0 in order, 1 weighted random, never the same one twice running); 0, 1 or 2 forces
 that one. A forced one set after the pick wins when the transition begins.
+
+**A scene can ask for a transition** (2026-10-24). A scene's `Transition` parameter (Scene page,
+the name without `tr_`) is read when the next transition is picked, which happens when a scene
+lands: the sequencer knows then which scene is on air and which is cued, and checks the cued one
+first (the one being entered), then the one on air (the one being left). If one names a
+transition that is in the pool (`Active`, its layers on), that is the pick, and its length is
+drawn as usual. Blank, or a name that is not available, falls back to the pool. A forced `ctrl`
+`transition` beats it. `scene_kaleidoscope` asks for `uvwipe`, so every cut into or out of it is
+the UV-space sweep. The choice was made this way, in the sequencer rather than in `ctrl`, so a new
+scene can opt in without the mixer changing; if two scenes ever want different transitions for
+the same cut, the entered one wins.
 
 **Length.** `render3d` runs exactly as long as the render movie, so the clip plays once through,
 frame 0 at the start and the last frame at the end (250 frames at 24 fps, 10.42 s). Every other
@@ -110,7 +123,7 @@ network — clickable there. An OP Viewer TOP was used first and cannot take cli
 | Clock bar | How far through this scene, and seconds to the next transition |
 | Transition bar | Which transition (the next one while idle), its length, how far through it is while it runs, and `overlay 0.80` while the render3d overlay is up |
 | OUT | The mixed output |
-| History | `lvl_a`, `lvl_b` and `overlay` over the last two minutes — each transition is two lines crossing, and a render3d one has a third that rises and falls across them |
+| History | `lvl_a`, `lvl_b` and `overlay` over the last two minutes — each transition is two lines crossing, and a render3d one has a third that rises and falls across them. A `uvwipe` one is two lines crossing on a smoothstep (`levels()` in the sequencer; measured, the sweep has covered 22% of the mesh at progress 0.3 and 76% at 0.7) |
 | Pool | One cell per scene: green on air, amber next, grey ready, red out with the reason |
 | Transition pool | A second row, one cell per transition, same colours; the picked one shows its length (`next  6.7 s`) |
 
@@ -127,7 +140,7 @@ after. Play lights green while the clock runs, Pause amber while paused, Next am
 transition runs. It only cooks while something is looking at it.
 `mixer_history`, `mixer_readout`, `mixer_pool` and `mixer_tpool` sit next to it on the main network as plain
 tiles. There is one pool cell per mixer input, built by script; a new scene needs its cell added
-(the cells are `monitor/pool_<n>`, 170 px wide at seven).
+(the cells are `monitor/pool_<n>`, 148 px wide at eight, 156 px apart; the transition row is `monitor/tpool_<n>`, 170 wide).
 
 **Adding a scene:** wire it into the next free mixer input, add `in_<n>` inside (named so it
 sorts after the others — In TOPs order alphabetically), wire `in_<n>` into input `n` of `bus_a`

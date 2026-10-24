@@ -14,6 +14,7 @@ and a plain ramp in another.
 | `vhs.tox` | `vhs` | Mirror, animated | `level`, beat warp on `kick` × `circ` | Trails and smear, the mirror seam breathing on a slow LFO when the pentagon knob is on, an edge LFO when the triangle knob is on, melting on the beat when the circle knob is on |
 | `render3d.tox` | `render3d` | Top-down surface (S18) | off | Blender renders landed back on the tipis. **Not in rotation:** `Active` is off, it is the overlay of the `render3d` transition |
 | `blend.tox` | `vhs` `microscope` | Ramp | — | Microscope laid over vhs through multiply, add and difference — dark, glowing and ghosted at once. The old `blend_mix` |
+| `kaleidoscope.tox` | `kaleidoscope` | Top-down, mirrored (`uv_topdown_mirror`, embedded) | — | A physical kaleidoscope video stream centred on each tipi's apex, the second tipi its mirror image. Asks for the `uvwipe` transition. Image scene (S18) |
 | `template.tox` | one, unnamed | Ramp | — | The minimum scene. Copy it to start a new one |
 
 In the show each is `/project1/scene_<name>`, in the **SCENES** box next to the LAYERS box, with
@@ -41,6 +42,11 @@ in_<layer> -> fx -> pfx -> uv_ramp / uv_mirror / ... -> sw_map -> lvl -> out1
 | `Active` | Take this scene out of rotation without touching its layers |
 | `Layers` | Space-separated layer names this scene uses |
 | `Weight` | How often it comes up when the mixer picks randomly. Default 1 |
+| `Transition` | Ask the mixer for a transition by name, without the `tr_` prefix (`uvwipe`). Blank, the default, leaves it to the mixer's pool. The scene being entered is asked first, then the one being left; a transition that is switched off or whose layer is off is ignored. Only `kaleidoscope` sets it (`uvwipe`). `template` has it, blank |
+
+Added 2026-10-24. A scene still has no length and does not pick its neighbours; it only names a
+look for the cut into or out of it. The mixer reads it when it picks the next transition (see
+`Components/Mixer/README.md`). A forced `ctrl` `transition` still wins over it.
 
 **Layer page** — `Mapping`, `Audio Source`, `Audio Sensitivity`, `Noise Multiplier`,
 `Opacity`. The page kept its old name so nothing referencing it broke; it is the scene's.
@@ -154,6 +160,7 @@ midi -> knobs                      (at the top)
 4. Wire in the knobs you want from `knobs` — see Knobs above.
 5. Wire `out1` into the next free input of `mixer`, add a matching `in_<n>` inside it (and a mesh
    into `switch2`, S18), and save it here as `<name>.tox`.
+6. Optional: type a transition name into `Transition` on the Scene page to ask the mixer for it.
 
 `template.tox` in this folder is the same component.
 
@@ -183,6 +190,7 @@ still wired to the scenes but feed nothing — kept for falling back while the m
 | 4 | `scene_mariokart` | `tipi_geo` |
 | 5 | `scene_vhs` | `tipi_geo` |
 | 6 | `scene_blend` | `tipi_geo` |
+| 7 | `scene_kaleidoscope` | `tipi_geo` |
 
 `Render_Engine/geo1.material` is fixed on `constant1`. It used to switch to
 `scene_render3d/surface_topdown/mat_surface` on index 3, a snap at the transition midpoint; that
@@ -210,6 +218,31 @@ difference blend goes on top. Good candidates for a knob.
 **In TOP order is alphabetical, not top to bottom.** `in_microscope` is the scene's input 0 and
 `in_vhs` input 1, wherever they sit in the network. Wire layers by the In TOP's name, not by
 position.
+
+## kaleidoscope
+
+```
+in_kaleidoscope -> uv_topdown_mirror -> lvl -> out1
+```
+
+The first scene for a live stream: a camera on a physical kaleidoscope. It has no effect chain
+(the stream is already the effect); the `fx` chain's Kaleido lane can be copied in if the picture
+wants more. The layer (`layer_kaleidoscope`) is wired in by the In TOP's name, `in_kaleidoscope`.
+
+**Mapping.** `uv_topdown_mirror` puts one picture on each tipi, centred on its own apex, and the
+second tipi is the mirror image of the first (the footage's x runs the other way, so the two
+read as one picture reflected in the plane between the apexes). It is the top-down mapping
+(`uvmap_topdown`) with the frame measured from the apexes instead of the Blender camera. The
+details and the two-way choice (embedded here, and saved as a component) are in
+`Components/UVMaps/README.md`.
+
+**Transition.** `Transition` is `uvwipe`: the mixer uses the UV-space wipe when this scene is
+entered or left (`Components/Transitions/README.md`). Every other transition is unchanged for
+every other pair of scenes.
+
+**Seeing it.** `layer_kaleidoscope`'s `input` index 3 is a test card with an F in the middle:
+upright on the first tipi, reversed on the second. `uv_topdown_mirror/preview_topdown` shows the
+whole thing from above.
 
 ## render3d
 

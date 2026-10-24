@@ -22,6 +22,7 @@ tools/td-version.sh sync
 | `Components/Layer/layer.tox` | 2025.32460 | macOS |
 | `Components/Layers/cam_41.tox` | 2025.32460 | macOS |
 | `Components/Layers/cam_71.tox` | 2025.32460 | macOS |
+| `Components/Layers/kaleidoscope.tox` | 2025.32460 | macOS |
 | `Components/Layers/mariokart.tox` | 2025.32460 | macOS |
 | `Components/Layers/microscope.tox` | 2025.32460 | macOS |
 | `Components/Layers/render3d.tox` | 2025.32460 | macOS |
@@ -30,6 +31,7 @@ tools/td-version.sh sync
 | `Components/Mixer/mixer.tox` | 2025.32460 | macOS |
 | `Components/PaletteFX/palettefx.tox` | 2025.32460 | macOS |
 | `Components/Scenes/blend.tox` | 2025.32460 | macOS |
+| `Components/Scenes/kaleidoscope.tox` | 2025.32460 | macOS |
 | `Components/Scenes/mariokart.tox` | 2025.32460 | macOS |
 | `Components/Scenes/microscope.tox` | 2025.32460 | macOS |
 | `Components/Scenes/render3d.tox` | 2025.32460 | macOS |
@@ -39,10 +41,12 @@ tools/td-version.sh sync
 | `Components/Transitions/cross.tox` | 2025.32460 | macOS |
 | `Components/Transitions/fade_black.tox` | 2025.32460 | macOS |
 | `Components/Transitions/render3d.tox` | 2025.32460 | macOS |
+| `Components/Transitions/uvwipe.tox` | 2025.32460 | macOS |
 | `Components/UVMaps/uvmap_mariokart.tox` | 2025.32460 | macOS |
 | `Components/UVMaps/uvmap_mirror.tox` | 2025.32460 | macOS |
 | `Components/UVMaps/uvmap_ramp.tox` | 2025.32460 | macOS |
 | `Components/UVMaps/uvmap_topdown.tox` | 2025.32460 | macOS |
+| `Components/UVMaps/uvmap_topdown_mirror.tox` | 2025.32460 | macOS |
 | `Experiments/Light rotation/light_rotation.22.toe` | 2025.32460 | macOS |
 | `Experiments/Light rotation/light_rotation.toe` | 2025.32460 | macOS |
 | `Experiments/resolume-arena-test/arena_test.toe` | 2025.32460 | macOS |

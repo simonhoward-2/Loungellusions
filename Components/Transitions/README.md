@@ -15,11 +15,12 @@ How the mixer gets from one scene to the next. Every transition has the same con
 | `fade_black.tox` | A down to black over the first half, B up from black over the second |
 | `cross.tox` | Straight dissolve, A to B |
 | `render3d.tox` | The strip dips to black (A out, B in) while the Blender render is drawn over the tipis. Index 2. Runs as long as the render movie (10.42 s), the rest get a random length |
+| `uvwipe.tox` | A sweep in UV space: B takes over from A round each cone, starting on the outer back, and the two sweeps meet over the canopy. Index 3. Asked for by `scene_kaleidoscope` |
 
-Both run backwards as well as forwards: the mixer's buses flip-flop, so every other transition
+All run backwards as well as forwards: the mixer's buses flip-flop, so every other transition
 goes from B to A with progress running 1 to 0. Write new ones so that works.
 
-In the show they live inside `/project1/mixer` as `tr_fade_black`, `tr_cross` and `tr_render3d`, with
+In the show they live inside `/project1/mixer` as `tr_fade_black`, `tr_cross`, `tr_render3d` and `tr_uvwipe`, with
 `Progress` set by expression from `mixer/state`. Out of the mixer that expression has nothing to
 read, so a loaded `.tox` shows an error until its `Progress` is set.
 
@@ -41,5 +42,38 @@ it is drawn on the 3D mesh: `Render_Engine/geo_overlay` follows `overlay`. Saved
 transition can be dropped in on its own; without the mixer's `state` its `Progress` shows an
 error, like the others, and without `geo_overlay` it is a dip to black.
 
-Next on the list from `docs/PLAN.md` section 9: `blend` (pass through a composite of A and B)
-and a wipe in UV space that sweeps around the cones.
+## uvwipe
+
+The transition only this geometry can do. A wipe on a flat screen is a line crossing a
+rectangle; this one is a sweep travelling round the cones and across the canopy.
+
+```
+in_a ──┐
+in_b ──┼─ wipe (GLSL TOP) ── out1
+uvgen_sweep ┘            Progress, soft (wipe_ctrl)
+```
+
+- `uvgen_sweep` renders the tipi mesh into its own texture space, the way `uvgen_topdown`
+  does (a GLSL MAT puts each vertex at its UV; the pixel shader writes a number as colour). The
+  number is the **sweep field**, 0 to 1: how late the wipe reaches that point of the surface.
+  It is the angle round the cone's apex, from 0 on the side facing away from the other tipi to 1
+  facing it, mixed with how far across toward the plane between the tipis (`across`, 0.3). Tipi 2
+  is reflected, so both cones sweep the same way and the field is symmetric. The two sweeps meet
+  over the canopy, which is reached last.
+- `wipe` mixes A into B with it. The soft edge runs the whole field plus its own width, so at
+  progress 0 the picture is entirely A and at 1 entirely B (measured: mean abs difference to A at 0
+  and to B at 1 both 0.0), with a smooth edge of `soft` (0.3) of the sweep in between.
+- It runs backwards because progress is just an offset into the same field: at 1 to 0 B is pulled
+  back along the way it came, finishing on the outer backs of the cones. The buses flip-flop, so
+  that is every other run.
+- `wipe_ctrl` is a constant CHOP: `soft`, `across`, and the measured footprint (`apex1x`
+  0, `apex2x` 115.12, `apexz` 0, `baser` 51.1; see `Components/UVMaps/README.md`). The footprint
+  is the same numbers as `uvmap_topdown_mirror`.
+- `Progress` is `mixer/state` `progress`, like the others. `Active` / `Weight` / `Layers` are
+  there too, with no layer (always available).
+
+It works on the strip, so it only reads as a sweep **on the tipis**, not in the monitor's cropped
+picture. Take the `Transition` parameter on a scene (`Components/Scenes/README.md`) to ask for it.
+It is the same length as any other transition, a random 2 to 8 s.
+
+Next on the list from `docs/PLAN.md` section 9: `blend` (pass through a composite of A and B).
