@@ -497,8 +497,8 @@ the panel and whatever the mixer grows next. `Components/Mixer/README.md` has th
 
 `switch2` and `geo1.material` read `mixer/state` `scene` instead of the `button1` counter (since
 2026-10-24 only `switch2` still does, see the render3d overlay below).
-`switch1` / `button1` are still wired to the scenes but feed nothing — a fallback while this is
-new. Delete them once the mixer has had a night.
+`switch1` / `button1` were still wired to the scenes but fed nothing — a fallback while this was
+new. Gone by 2026-10-24 (see the null tidy below).
 
 Measured: `fade_black` at progress 0.25 / 0.5 / 0.75 gave half of A / black / half of B; `cross`
 at 0.5 gave exactly the mean of the two buses. Auto ran several scenes through on its own, and
@@ -522,7 +522,7 @@ from scene A to scene B. Detail is in `Components/Mixer/README.md`,
 |---|---|
 | `tr_render3d`, transition 2 | Wired into `transition` input 2, same contract. It began as a copy of `tr_cross`; since the same day it is a dip to black (A out, B in) by the overlay's own envelope (`dip` in `state`), so the render plays on black. With the layer off you still get the dip Exported to `Components/Transitions/render3d.tox`. `levels()` already drew it as a cross |
 | `overlay` | New `state` channel. The sequencer latches the transition index at `begin()` and publishes 0 outside a render3d transition; inside, a smoothstep up over the first `overlayrise` (0.3) of `tprog`, 1 through the middle, down over the last `overlayfall` (0.3). Both live in `ctrl`. 0 when `layer_render3d` is off |
-| `Render_Engine/geo_overlay` | Copy of `geo1`, mesh from `scene_render3d/out_geo` through a new third input `in3`, material `mat_overlay`: uv1 off `surface_topdown/lvl_master`, additive, depth test less-or-equal, no depth write, colour = `overlay`, draw priority -1. `render` = `overlay > 0` |
+| `Render_Engine/geo_overlay` | Copy of `geo1`, mesh from `scene_render3d/out_geo` through a new third input `in3_overlay_geo`, material `mat_overlay`: uv1 off `surface_topdown/lvl_master`, additive, depth test less-or-equal, no depth write, colour = `overlay`, draw priority -1. `render` = `overlay > 0` |
 | `scene_render3d` out of rotation | `Active` off. `geo1.material` is fixed on `constant1`; `switch2` index 3 points at `tipi_geo`. The midpoint swap is gone, nothing else needed it |
 | Cooking | The sequencer sets `allowCooking` on `layer_render3d` and `scene_render3d` only while a render3d transition runs. Idle: 0 cooks of the movie and the scene over 359 frames. Left on, the movie decoded 347 of 356 frames for nothing |
 | Restart | The movie `car_trail` is in `specify` mode, index in seconds since `r3d_t0`, stored at `begin()`. The scene's trail feedback is reset at the same moment |
@@ -572,6 +572,30 @@ ran with its overlay at 1.0 mid-run and everything off again after it landed, al
 Open: which stream feeds `layer_kaleidoscope` (NDI, Syphon, a URL, a capture device). Until
 then it plays a stand-in clip. The wipe's `soft` (0.3) and `across` (0.3) are guesses to be
 tuned on the real tipis.
+
+### Built 2026-10-24: the null tidy
+
+Generic names in `/project1` and one level into `Render_Engine` renamed for their job (S14), the
+three-null mesh chain cut to one. No change to any picture: with the old three-null chain wired
+in temporarily, `proj1` and `preview` came out bit-identical (same means and sums), and the
+error list is the same 109 entries, renamed. Detail in the table; every name below is live.
+
+| Was | Is | Job |
+|---|---|---|
+| `null2` -> `null1` -> `null4` | `show_geo` | The mesh on air, `switch2`'s pick. One null at the Render_Engine boundary; the other two were pure pass-through and are deleted |
+| `null5` | `show_tex_render` | `show_tex` handed to Render_Engine. camSchnappr still reads `show_tex` by path |
+| `nvupscaler1` | `show_tex_upscale` | Bypassed NVIDIA upscaler on `show_tex`, wired to nothing |
+| `select3` -> `nvupscaler2` -> `level1` -> `moviefileout1` | `cam41_src` -> `cam41_upscale` -> `cam41_grade` -> `cam41_record` | The Video Capture box: `layer_cam_41` upscaled, levelled and written to `Mapping1.0.mov` (a Windows path). Not in the show path |
+| `select1` -> `transform1` -> `transform2` | `tipi_mesh_baked` -> `tipi_upright` -> `tipi_scale` | The GEOMETRY box, into `tipi_geo` |
+| `window1` | `proj1_window` | Window COMP showing `proj1` |
+| `annotate1` / `note_sources2` | `note_control_panel` / `note_capture` | Boxes. `note_capture` body was a copy of SOURCES and is rewritten |
+| `Render_Engine/in1` `in2` `in3` | `in1_show_tex` `in2_show_geo` `in3_overlay_geo` | The numbered prefix keeps input order, which follows the In OPs' names. `cam1` / `cam2` / `camSchnappr` / `camSchnappr1` `Geosop` and `constant1.colormap` pointed at `in2` / `in1` by name and are re-pointed |
+| `Render_Engine/annotate1-4` | `note_input` `note_preview` `note_main_geo` `note_projmaps` | Boxes |
+
+Left alone, on purpose: `Render_Engine/cam1`, `cam2` (their internal DATs hold absolute paths,
+and `render1` / `render2` pick them by name), `render1-3`, `comp1`, `constant1-2`, `geo1`. `base1` at the top is a scene, not a null.
+The stale text about `switch1` in the MIXER and SCENES boxes is fixed. `switch1`, `button1`,
+`null3` and `null3_export` were already gone when this was done.
 
 ### Layers
 
@@ -819,8 +843,8 @@ gone.*
 - **`Masterfade` — fixed 2026-10-24.** It used to drive `master.opacity`, which only scales
   alpha, and `Render_Engine/constant1` has blending off, so the blackout never dimmed the
   projectors. `master.brightness1` is now `Masterlevel * Masterfade`, `opacity` stays 1. Measured on
-  `master`: mean RGB at fade 0.25 is 0.248 of fade 1.0, and 0 at fade 0. The projector output
-  `null5` fell by the same ratio. The top-down overlay path bypasses `master` and already
+  `master`: mean RGB at fade 0.25 is 0.248 of fade 1.0, and 0 at fade 0. The image into the
+  render, `show_tex_render` (then `null5`), fell by the same ratio. The top-down overlay path bypasses `master` and already
   multiplies the two itself in `render3d/surface_topdown/lvl_master`. `Feature` and `Layermix`,
   fossils from the old composition stage that nothing read, were deleted the same day.
 - **The canopy.** The mesh is cone A + canopy + cone B, and the unwrap runs continuously across

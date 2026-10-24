@@ -178,10 +178,10 @@ mixer pool drops them when their camera layer is off. They have no `Active` or `
 
 Scenes wire into `mixer` (image) and `switch2` (mesh). Since 2026-10-22 the mixer picks the
 scene and `switch2` follows its `state` `scene` channel (`Components/Mixer/README.md`). The
-mixer's inputs are in the same order as the table below. `switch1` and the `button1` counter are
-still wired to the scenes but feed nothing — kept for falling back while the mixer is new:
+mixer's inputs are in the same order as the table below. The old `switch1` and `button1` counter
+are gone; the first column keeps the order they had:
 
-| Index | `switch1` | `switch2` |
+| Index | Mixer input | `switch2` |
 |---|---|---|
 | 0 | `base1` (camera `cam_71`) | `base1/out4` |
 | 1 | `teepee_feedback` (camera `cam_41`) | `teepee_feedback/out2` |
@@ -264,7 +264,7 @@ the show mesh with a second UV set in layer 1 — and a material, `mat_surface`,
 overlay of the mixer's `render3d` transition (`Components/Transitions/README.md`):
 
 ```
-scene_render3d/out_geo ── Render_Engine/in3 ── geo_overlay ── (material) mat_overlay
+scene_render3d/out_geo ── Render_Engine/in3_overlay_geo ── geo_overlay ── (material) mat_overlay
                                                                   colormap = surface_topdown/lvl_master, uv1
 ```
 

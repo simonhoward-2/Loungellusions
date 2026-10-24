@@ -173,6 +173,9 @@ mapping moved up with the effects.*
 `uvmap_hybrid` sounding like a blend when it was one method per tipi. A name that describes
 the method is the cheapest documentation there is.
 
+**Nulls:** keep one where a boundary or a path reference needs it, name it for the job
+(`show_geo`, `show_tex_render`), and say so in its `.comment`. A chain of nulls adds nothing.
+
 ## S15 — Annotate the network, comment the nodes
 
 **What:** Top-level networks are divided into labelled `annotateCOMP` regions, and any node
@@ -241,7 +244,7 @@ touching an existing CHOP whose tile is blank, flip it.
 README row. (Written when layers held the mapping; since 2026-10-21 the scene does.)
 
 - An **image scene** remaps its content into the model's UV layer 0 and hands over one TOP.
-  It flows `switch1` → `composition` → `master` → `show_tex` → `Render_Engine/geo1`, wearing
+  It flows the mixer → `composition` → `master` → `show_tex` → `show_tex_render` → `Render_Engine/geo1`, wearing
   `constant1`. Ramp and mirror mappings work this way. Three of the four scenes are this.
 - A **surface scene** hands over a *mesh and a material* instead. It writes its own unwrap
   into **UV layer 1** of the show mesh, publishes that mesh on a SOP output, and supplies the
