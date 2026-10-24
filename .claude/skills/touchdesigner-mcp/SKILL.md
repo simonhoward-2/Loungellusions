@@ -124,6 +124,20 @@ worth a fresh look each time. Two reliable alternatives:
 
 Prefer `parent(N).op(...)` for portability inside toxes.
 
+### A parameter can hold an expression that does nothing
+
+`par.expr` returns the stored text even when `par.mode` is `ParMode.CONSTANT`, so a parameter that
+reads as linked can be dormant: the value is frozen and the expression is ignored, with no error.
+Fifteen knob links across the scenes were in that state (found 2026-10-24, the knobs moved
+nothing). Test with `p.mode == ParMode.EXPRESSION`, not `if p.expr`. To switch one back on, set
+`p.mode = ParMode.EXPRESSION`. Setting `p.val` afterwards, or assigning `p.expr = ''`, puts it
+back to constant.
+
+Three more traps that bit the same scan: `OP.pars()` leaves out custom parameters (use
+`customPars`), `findChildren(depth=N)` matches only nodes exactly N levels down (use
+`maxDepth=N` for "up to N"), and a node outside a cooking path does not re-evaluate its
+expressions, so a stale value there is not proof the link is off.
+
 ### Panels: look at them, and watch for fill-mode siblings
 
 A panel change is not done until it has been seen. Render it with a temporary OP Viewer TOP

@@ -11,7 +11,7 @@ and a plain ramp in another.
 |---|---|---|---|---|
 | `microscope.tox` | `microscope` | Ramp | `low` | Macro footage, hue drifting with the bass |
 | `mariokart.tox` | `mariokart` | Mirror, static (`uv_mariokart`) | `kick` | Split-screen racing, bloom on the beat |
-| `vhs.tox` | `vhs` | Mirror, animated | `level`, mirror split on `kick`, beat warp on `kick` × `circ` | Trails and smear, the mirror seam breathing on the beat, melting on the beat when the circle knob is on. Pentagon knob = warp size |
+| `vhs.tox` | `vhs` | Mirror, animated | `level`, beat warp on `kick` × `circ` | Trails and smear, the mirror seam breathing on a slow LFO when the pentagon knob is on, an edge LFO when the triangle knob is on, melting on the beat when the circle knob is on |
 | `render3d.tox` | `render3d` | Top-down surface (S18) | off | Blender renders landed back on the tipis. **Not in rotation:** `Active` is off, it is the overlay of the `render3d` transition |
 | `blend.tox` | `vhs` `microscope` | Ramp | — | Microscope laid over vhs through multiply, add and difference — dark, glowing and ghosted at once. The old `blend_mix` |
 | `template.tox` | one, unnamed | Ramp | — | The minimum scene. Copy it to start a new one |
@@ -58,8 +58,8 @@ in_<layer> -> fx -> pfx -> uv_ramp / uv_mirror / ... -> sw_map -> lvl -> out1
 | `Split Audio` | Audio channel that adds to the depth. `off` by default |
 | `Split Sens` | How much that channel adds |
 
-Depth is capped at 0.5, so audio only shows when `Split Depth` is below that. `vhs` sits at
-0.25 with `kick` adding up to 0.25.
+Depth is capped at 0.5, so audio only shows when `Split Depth` is below that. `vhs` no longer
+uses audio here: `Split Audio` is `off` and `Split Depth` is set by the pentagon knob (see below).
 
 ## Knobs and audio (S21)
 
@@ -69,7 +69,7 @@ Every scene has the same four CHOPs **at the top of its network**:
 | Node | Does |
 |---|---|
 | `midi` | Select CHOP of `/project1/midi/knobs` |
-| `knobs` | Null. `tri`, `pent`, `circ`, `sq`, 0 or 1 |
+| `knobs` | Null. `tri`, `pent`, `circ`, `sq`, 0 to 1 (a range; `snap` in `midi_map` makes one a 0/1 switch) |
 | `audio` | Select CHOP of `/project1/audio/analysis` |
 | `analysis` | Null. `low` `mid` `high` `level` `density` `speed` `kick` `noise`, 0 to 1 |
 
@@ -80,28 +80,61 @@ Pick off the knob you want where you want it: a Select CHOP on `knobs` into an e
 Export, or an expression such as `parent().op('knobs')['circ']` on a scene parameter. Nothing
 is bound by default — every scene's look is exactly its own parameters until you wire a knob in.
 
+A knob link is an **expression** on a scene parameter, and it only works while the parameter is in
+expression mode (`ParMode.EXPRESSION`). Fifteen links in `vhs`, `render3d`, `mariokart` and
+`microscope` had silently dropped to constant and were switched back on on 2026-10-24; if a knob
+seems to do nothing, check the parameter's mode, not just that an expression is there.
+
 ## vhs: beat warp
 
 The first effect wired by hand from the top-of-scene CHOPs:
 
 ```
 analysis ── beat_kick (kick, renamed warp) ──┐
-                                             beat_mul (multiply, gain 1) ── beat_warp ──▶ Wetwarp
+                                             beat_mul (multiply, gain 1) ── beat_warp ──▶ w_disp weight x, y
 knobs ───── beat_sens (circ) ────────────────┘
 ```
 
-The circle knob is the sensitivity: at 0 there is no beat warp, at 1 every kick crossfades the
-warp lane in, and the kick's lag tail lets it melt back out. `Wetwarp` on the Warp page reads
-`0.0 + op('beat_warp')['warp']` — edit the `0.0` for a resting warp, `beat_mul`'s gain to
-scale the whole effect, `beat_sens`'s channel to move it to another knob.
+The circle knob is the sensitivity: at 0 there is no beat warp, at 1 every kick drives the warp
+at full, and the kick's lag tail lets it melt back out. The beat drives **only the displace
+weight**: `fx/w_disp`'s `displaceweightx` and `displaceweighty` are `Warpamt * beat_warp`.
+`Wetwarp` is not the beat any more: it sits at 1 (the warp lane always in), so with no kick the
+weight is 0 and the picture is undisplaced. Edit `beat_mul`'s gain to scale the whole effect,
+`beat_sens`'s channel to move the sensitivity to another knob.
 
 **Warp size** is the pentagon knob: `size_knob` (pent) → `size_range` (Math CHOP, 0–1 to
-0.12–0.45) → `warp_size` → `Warpamt` on the Warp page. Knob off is the old 0.12; on is a heavy
-0.45 melt. Edit `size_range`'s `torange` to taste. **Size only shows while the beat warp is in** — circle
-knob on and a kick landing — because `Wetwarp` is the beat; with no beat the warp lane is mixed out.
+0.12–0.45) → `warp_size` → `Warpamt` on the Warp page. It is the most the weight can reach, at a
+kick of 1 with the circle knob at 1: knob at 0 is 0.12, at 1 a heavy 0.45 melt. Edit
+`size_range`'s `torange` to taste. **Size only shows while a kick lands** with the circle knob up,
+because the weight is size × beat.
 
 Seen on real music on 2026-10-21: a kick of 0.69 took `Wetwarp` to 0.69 with the circle knob on,
 and with the pentagon on as well the frame melted hard on each beat.
+
+## vhs: mirror and edge LFOs
+
+Two more effects wired by hand, both off the beat. The mirror is an LFO whose depth is the knob;
+the edge is a second LFO the knob scales.
+
+```
+knobs ── mirror_knob (pent) ── mirror_range (0-1 to 0-0.4) ── mirror_depth ──▶ Splitdepth
+knobs ── edge_sens (tri) ──┐
+edge_lfo (sin, 0.2 Hz) ────┴─ edge_mul ── edge_wet ──▶ Wetedge
+```
+
+**Mirror.** `uv_mirror`'s own `lfo_split` already swings the seam at `Splitrate` (0.15 Hz, the
+pentagon knob takes it up to 1.2). It no longer follows the kick (`Split Audio` off). The LFO's
+depth, its sensitivity, is `Splitdepth` = `mirror_depth`: pentagon at 0 = 0, the seam holds still;
+turned up it reaches 0.4 at 1, a bigger breath the further it goes. Edit `mirror_range`'s `torange` for the depth (0.5 is the peak
+of "no crop").
+
+**Edge.** `edge_lfo` is a sine, 0.4 +/- 0.4 (0 to 0.8), at 0.2 Hz. `edge_mul` multiplies it by the
+triangle knob, so `Wetedge` (the Edge page's wet) swings 0 to 0.8 at knob 1, less the further down
+it goes, and sits at 0 at knob 0. `Edgestr` stays 1.5. Edit `edge_lfo`'s frequency, amp and offset to taste.
+
+The triangle knob already drives the trail amount and the pentagon already drives the mirror rate
+and warp size; the knobs are shared, not exclusive. To move either effect to another knob change
+the channel name in `mirror_knob` or `edge_sens`.
 
 ## Making a new scene
 

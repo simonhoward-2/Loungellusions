@@ -20,7 +20,7 @@ real hours; 9 and 10 are the current design.
 | Layers, scenes, mixer | **Layers and scenes built 2026-10-21; mixer proof of concept 2026-10-22.** Section 9 — two buses, pool, clock, `fade_black` and `cross`, and a monitor with Play / Pause / Next |
 | Resolume as the mixer | **Alternative, not chosen.** Section 9A — every scene a clip, cooked on demand |
 | Audio reactivity | **Wired per scene.** The analysis comes in at the top of every scene; `vhs` breathes its mirror split and warps on the kick |
-| MIDI input | **Built, controller not yet learnt.** Section 10 — four 0/1 knobs, global values, each scene binds them its own way |
+| MIDI input | **Built, controller not yet learnt.** Section 10 — four 0-1 knobs (a range since 2026-10-24), global values, each scene binds them its own way |
 | Hand tracking | **Not now.** Parked deliberately, not forgotten |
 
 Sections 1-8 are history and reference. Sections 9 and 10 are what we are building.
@@ -993,7 +993,7 @@ so the name and the thing agree.
 
 Two things changed once the real controller was in hand, and they simplify everything below:
 
-- **The knobs read 0 or 1 only.** They are switches, not faders. So there is no position to
+- **The knobs read 0 or 1 only.** They are switches, not faders. *(Changed 2026-10-24: they are a range now, `snap` is off in `midi_map`. The text below is the original 0/1 design; nothing in it needs the knobs to be switches.)* So there is no position to
   pick up, no delta to take, and no relative mode — the whole of the old "go relative when
   scoped" design is gone.
 - **The value is global, the job is the scene's.** One `circ` value for the whole show, read
